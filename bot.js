@@ -5,7 +5,7 @@ const client = new Discord.Client();
 const token = process.env.TOKEN;
 const EMOJI_REGEXP = /<:[\w|\d]*:\d*>/g;
 const ID_REGEXP = /<(:[\w|\d]*:\d*)>/;
-const USERID_REGEXP = /<@!(\d*)>/;
+const USERID_REGEXP = /<@!?(\d*)>/;
 const COMMAND_PREFIX = ".nanami";
 
 // TEMP "DATABASE"
@@ -18,6 +18,7 @@ client.on('ready', () => {
 });
 
 client.on('message', msg => {
+  console.log(msg.content);
   const ids = getEmojiIds(msg.content);
   const author = msg.author;
 
