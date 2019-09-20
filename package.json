@@ -1,0 +1,15 @@
+{
+  "name": "emojitracker",
+  "version": "1.0.0",
+  "description": "discord bot for tracking emoji usage on your server",
+  "main": "bot.js",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "author": "James Tracy",
+  "license": "ISC"
+}
