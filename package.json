@@ -7,10 +7,12 @@
     "discord.js": "^11.5.1",
     "dotenv": "^8.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.19.2"
+  },
   "scripts": {
     "start": "node bot.js",
-    "test": "test"
+    "test": "nodemon bot.js"
   },
   "author": "James Tracy",
   "license": "ISC"
