@@ -8,6 +8,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node bot.js",
     "test": "test"
   },
   "author": "James Tracy",
