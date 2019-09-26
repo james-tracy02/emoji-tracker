@@ -7,23 +7,34 @@ const EMOJI_REGEXP = /<:[\w|\d]*:\d*>/g;
 const ID_REGEXP = /<(:[\w|\d]*:\d*)>/;
 const USERID_REGEXP = /<@!?(\d*)>/;
 const COMMAND_PREFIX = ".nanami";
-const TOTAL = "T";
 
-// TEMP "DATABASE"
-const DB = {"T": []}
+const Mongo = require('mongodb').MongoClient;
+const url = process.env.MONGODB_URI;
+const mongoClient = new Mongo(url);
 
+// Login
 client.login(token);
-
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  mongoClient.connect((err) => {
+    if(!err) {
+      console.log('connected to mongo');
+    }
+  });
 });
 
+
+// Message event listener
 client.on('message', msg => {
+  if(msg.author.bot) {
+    return
+  }
+
   const ids = getEmojiIds(msg.content);
   const author = msg.author;
 
   const summary = summarize(ids);
-  updateDB(author.id, summary); // will have to change update method for use with real db
+  update(author.id, summary);
 
   if(isCommand(msg)) {
     handleCommand(msg);
@@ -31,6 +42,8 @@ client.on('message', msg => {
   return;
 });
 
+
+// Message event handling
 function isCommand(msg) {
   return msg.content.startsWith(COMMAND_PREFIX);
 }
@@ -46,20 +59,19 @@ function handleCommand(msg) {
   }
   if(cmd == "display") {
     if(userId) {
-      const stats = retrieveDB(userId);
-      if(!stats.author) {
-        msg.channel.send("No stats for that user!");
-        return;
-      }
-      let response = `Emoji stats for <@${userId}>:\n   # of times used   % of emojis used   % of total for server\n`;
-      stats.author.forEach((item) => {
-        const authorTotal = stats.author.find((x) => x.emojiId == TOTAL);
-        const authorRatio = item.count / authorTotal.count;
-        const serverTotal = stats.total.find((x) => x.emojiId == item.emojiId);
-        const serverRatio = item.count / serverTotal.count;
-        response += `\n<${item.emojiId}> | ${item.count} | ${authorRatio.toFixed(4) * 100}% | ${serverRatio.toFixed(4) * 100}%`;
+      retrieve(userId, (stats) => {
+        if(!stats) {
+          msg.channel.send("No stats for that user!");
+          return;
+        }
+        console.log(stats);
+        stats.sort((a, b) => b.count - a.count);
+        let response = `Emoji stats for <@${userId}>:\n`;
+        stats.forEach((item) => {
+          response += "\n<" + item.emojiId + "> ` " + item.count + " `";
+        });
+        msg.channel.send(response);
       });
-      msg.channel.send(response);
     } else {
       msg.channel.send("That user doesn't exist.");
     }
@@ -68,6 +80,7 @@ function handleCommand(msg) {
   }
 }
 
+// Message interpretting
 function getEmojiIds(content) {
   const emoji = content.match(EMOJI_REGEXP);
   let ids = [];
@@ -80,7 +93,6 @@ function getEmojiIds(content) {
   return ids;
 }
 
-// flattens into values
 function summarize(ids) {
   uniqueIds = {};
   ids.forEach((item) => {
@@ -92,6 +104,47 @@ function summarize(ids) {
   return uniqueIds;
 }
 
+
+// DB operations
+function update(author, summary) {
+  const db = mongoClient.db();
+  const users = db.collection('users');
+
+  users.findOne({userId: author}, (err, user) => {
+    if(!user) {
+      const newUser = {userId: author, emoji: []};
+      Object.keys(summary).forEach((emojiId) => {
+        newUser.emoji.push({emojiId: emojiId, count: summary[emojiId]});
+      });
+      users.insertOne(newUser);
+    } else {
+      const updatedUser = {userId: author, emoji: user.emoji};
+      Object.keys(summary).forEach((emojiId) => {
+        const idx = user.emoji.findIndex((item) => item.emojiId === emojiId);
+        if(idx === -1) {
+          updatedUser.emoji.push({emojiId: emojiId, count: summary[emojiId]});
+        } else {
+          updatedUser.emoji[idx] = {emojiId: emojiId, count: user.emoji[idx].count + summary[emojiId]};
+        }
+      });
+      users.replaceOne({userId: author}, updatedUser);
+    }
+  });
+}
+
+function retrieve(author, callback) {
+  const db = mongoClient.db();
+  const users = db.collection('users');
+
+  users.findOne({userId: author}, (err, user) => {
+    if(!user) {
+      callback(null);
+    }
+    callback(user.emoji);
+  });
+}
+
+/*
 function updateDB(author, summary) {
   if(!DB.hasOwnProperty(author)) {
     DB[author] = [];
@@ -130,3 +183,4 @@ function retrieveDB(author) {
   DB[TOTAL].sort((a, b) => b.count - a.count);
   return {author: DB[author], total: DB[TOTAL]};
 }
+*/
