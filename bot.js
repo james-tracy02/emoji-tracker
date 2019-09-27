@@ -67,8 +67,14 @@ function handleCommand(msg) {
         console.log(stats);
         stats.sort((a, b) => b.count - a.count);
         let response = `Emoji stats for <@${userId}>:\n`;
+        let emojis = [];
+        msg.guild.emojis.forEach((emoji) => {
+          emojis.push(`:${emoji.identifier}`);
+        });
         stats.forEach((item) => {
-          response += "\n<" + item.emojiId + "> ` " + item.count + " `";
+          if(emojis.some((x) => x === item.emojiId)) {
+            response += "\n<" + item.emojiId + "> ` " + item.count + " `";
+          }
         });
         msg.channel.send(response);
       });
