@@ -72,10 +72,12 @@ function handleCommand(msg) {
         msg.guild.emojis.forEach((emoji) => {
           emojis.push(`:${emoji.identifier}`);
         });
-        stats.forEach((item, idx) => {
+        let n = 0;
+        stats.forEach((item) => {
           if(emojis.some((x) => x === item.emojiId)) {
+            n += 1;
             response += "<" + item.emojiId + "> ` " + item.count + " `";
-            if(idx % ROW_COUNT === ROW_COUNT-1) {
+            if(n % ROW_COUNT === 0) {
               response += '\n\n';
             } else {
               response += '          ';
