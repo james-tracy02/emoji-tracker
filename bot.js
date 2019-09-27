@@ -7,6 +7,7 @@ const EMOJI_REGEXP = /<:[\w|\d]*:\d*>/g;
 const ID_REGEXP = /<(:[\w|\d]*:\d*)>/;
 const USERID_REGEXP = /<@!?(\d*)>/;
 const COMMAND_PREFIX = ".nanami";
+const ROW_COUNT = 6;
 
 const Mongo = require('mongodb').MongoClient;
 const url = process.env.MONGODB_URI;
@@ -66,14 +67,19 @@ function handleCommand(msg) {
         }
         console.log(stats);
         stats.sort((a, b) => b.count - a.count);
-        let response = `Emoji stats for <@${userId}>:\n`;
+        let response = `Emoji stats for <@${userId}>:\n\n\n`;
         let emojis = [];
         msg.guild.emojis.forEach((emoji) => {
           emojis.push(`:${emoji.identifier}`);
         });
-        stats.forEach((item) => {
+        stats.forEach((item, idx) => {
           if(emojis.some((x) => x === item.emojiId)) {
-            response += "\n<" + item.emojiId + "> ` " + item.count + " `";
+            response += "<" + item.emojiId + "> ` " + item.count + " `";
+            if(idx % ROW_COUNT === ROW_COUNT-1) {
+              response += '\n\n';
+            } else {
+              response += '          ';
+            }
           }
         });
         msg.channel.send(response);
