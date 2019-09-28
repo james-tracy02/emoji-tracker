@@ -74,7 +74,7 @@ function combineEmoji(emojiLists) {
   masterList = [];
   emojiLists.forEach((emojiList) => {
     emojiList.forEach((emoji) => {
-      const idx = masterList.indexOf((x) => x.emojiId === emoji);
+      const idx = masterList.findIndex((x) => x.emojiId === emoji.emojiId);
       if(idx === -1) {
         masterList.push(emoji);
       } else {
