@@ -1,46 +1,47 @@
 const Discord = require("discord.js");
 const dotenv = require("dotenv"); dotenv.config();
 
+const UsersRepository = require("./users.js");
+
 const client = new Discord.Client();
-const token = process.env.TOKEN;
+const TOKEN = process.env.TOKEN;
+
 const EMOJI_REGEXP = /<:[\w|\d]*:\d*>/g;
 const ID_REGEXP = /<(:[\w|\d]*:\d*)>/;
 const USERID_REGEXP = /<@!?(\d*)>/;
-const COMMAND_PREFIX = ".nanami";
-const ROW_COUNT = 50;
 
-const Mongo = require('mongodb').MongoClient;
-const url = process.env.MONGODB_URI;
-const mongoClient = new Mongo(url);
+const COMMAND_PREFIX = ".nanami";
+const ROW_COUNT = "80";
+
+const Users = new UsersRepository();
+
+const commands = {
+  display,
+};
 
 // Login
-client.login(token);
+client.login(TOKEN);
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  mongoClient.connect((err) => {
-    if(!err) {
-      console.log('connected to mongo');
-    }
-  });
 });
-
 
 // Message event listener
 client.on('message', msg => {
   if(msg.author.bot) {
-    return
+    return;
   }
-
-  const ids = getEmojiIds(msg.content);
-  const author = msg.author;
-
-  const summary = summarize(ids);
-  update(author.id, summary);
 
   if(isCommand(msg)) {
     handleCommand(msg);
+    return
   }
+
+  const emojiIds = getEmojiIds(msg.content);
+  const author = msg.author;
+  const summary = summarize(emojiIds);
+  Users.updateAsync(author.id, summary);
   return;
+
 });
 
 
@@ -50,52 +51,116 @@ function isCommand(msg) {
 }
 
 function handleCommand(msg) {
-  const raw = msg.content.substring(COMMAND_PREFIX.length + 1);
-  const cmd = raw.substring(0, raw.indexOf(" "));
-  const user = raw.substring(raw.indexOf(" "));
-  const match = user.match(USERID_REGEXP);
-  let userId;
-  if(match) {
-    userId = match[1];
+  let rest = msg.content.substring(COMMAND_PREFIX.length + 1);
+  const args = [];
+  let n = 0;
+
+  while(rest.indexOf(" ") !== -1) {
+    args.push(rest.substring(0, rest.indexOf(" ")));
+    rest = rest.substring(rest.indexOf(" ") + 1);
   }
-  if(cmd == "display") {
-    if(userId) {
-      retrieve(userId, (stats) => {
-        if(!stats) {
-          msg.channel.send("No stats for that user!");
-          return;
-        }
-        console.log(stats);
-        stats.sort((a, b) => b.count - a.count);
-        let response = `Emoji stats for <@${userId}>:\n\n`;
-        let emojis = [];
-        msg.guild.emojis.forEach((emoji) => {
-          emojis.push(`:${emoji.identifier}`);
-        });
-        let max = 0;
-        stats.forEach((item) => {
-          if(emojis.some((x) => x === item.emojiId)) {
-            if(item.count > max) {
-              max = item.count;
-            }
-          }
-        });
-        stats.forEach((item) => {
-          if(emojis.some((x) => x === item.emojiId)) {
-            response += "<" + item.emojiId + "> ` " + item.count;
-            for(let i = 0; i < item.count * ROW_COUNT / max - 3; i++) {
-              response += " "
-            }
-            response += "`\n";
-          }
-        });
-        msg.channel.send(response);
-      });
-    } else {
-      msg.channel.send("That user doesn't exist.");
+  args.push(rest);
+
+  if(args.length === 0) {
+    return;
+  }
+
+  const fArgs = args.slice(1);
+  fArgs.unshift(msg);
+  commands[args[0]].apply(null, fArgs); //executes command
+}
+
+function combineEmoji(emojiLists) {
+  masterList = [];
+  emojiLists.forEach((emojiList) => {
+    emojiList.forEach((emoji) => {
+      const idx = masterList.indexOf((x) => x.emojiId === emoji);
+      if(idx === -1) {
+        masterList.push(emoji);
+      } else {
+        masterList[idx].count += emoji.count;
+      }
+    });
+  });
+  return masterList;
+}
+
+function displayHelp(msg, emoji) {
+  emoji.sort((a, b) => b.count - a.count);
+
+  let guildEmojis = [];
+  msg.guild.emojis.forEach((emoji) => {
+    guildEmojis.push(`:${emoji.identifier}`);
+  });
+
+  let max = 1;
+  emoji.forEach((item) => {
+    if(guildEmojis.some((x) => x === item.emojiId)) {
+      if(item.count > max) {
+        max = item.count;
+      }
     }
+  });
+
+  let response = "";
+  emoji.forEach((item) => {
+    if(guildEmojis.some((x) => x === item.emojiId)) {
+      if(response.length >= 1800) {
+        msg.channel.send(response);
+        response = "";
+      }
+      response += "`";
+      for(let i = 0; i < item.count * ROW_COUNT / max - 3; i++) {
+        response += " ";
+      }
+      response += "" + item.count + " ` <" + item.emojiId + ">\n";
+    }
+  });
+  msg.channel.send(response);
+}
+
+function display(msg, ...userRefs) {
+  if(userRefs.length === 0) {
+    msg.channel.send("No users given.");
+    return;
+  }
+
+  userIds = [];
+  userRefs.forEach((x) => {
+    const match = x.match(USERID_REGEXP);
+    if(match) {
+      userIds.push(match[1]);
+    }
+  });
+
+  if(userIds.length === 0) {
+    msg.channel.send("Invalid users.")
+    return;
+  }
+
+  if(userIds.length === 1) {
+    Users.retrieveOneAsync(userIds[0], (err, user) => {
+      if(!user.emoji || user.emoji.length === 0) {
+        msg.channel.send("Nothing to display.");
+        return;
+      }
+      displayHelp(msg, user.emoji);
+      return;
+    });
   } else {
-    msg.channel.send("I don't know how to do that.");
+    Users.retrieveManyAsync(userIds, (err, users) => {
+      const emojiList = [];
+      users.forEach((user) => {
+        emojiList.push(user.emoji);
+      });
+      combinedEmoji = combineEmoji(emojiList);
+      if(!combinedEmoji || combinedEmoji.length === 0) {
+        msg.channel.send("Nothing to display.");
+        return;
+      }
+      displayHelp(msg, combinedEmoji);
+      return;
+    });
   }
 }
 
@@ -113,7 +178,7 @@ function getEmojiIds(content) {
 }
 
 function summarize(ids) {
-  uniqueIds = {};
+  const uniqueIds = {};
   ids.forEach((item) => {
     if(!uniqueIds.hasOwnProperty(item)) {
       uniqueIds[item] = 0;
@@ -122,84 +187,3 @@ function summarize(ids) {
   });
   return uniqueIds;
 }
-
-
-// DB operations
-function update(author, summary) {
-  const db = mongoClient.db();
-  const users = db.collection('users');
-
-  users.findOne({userId: author}, (err, user) => {
-    if(!user) {
-      const newUser = {userId: author, emoji: []};
-      Object.keys(summary).forEach((emojiId) => {
-        newUser.emoji.push({emojiId: emojiId, count: summary[emojiId]});
-      });
-      users.insertOne(newUser);
-    } else {
-      const updatedUser = {userId: author, emoji: user.emoji};
-      Object.keys(summary).forEach((emojiId) => {
-        const idx = user.emoji.findIndex((item) => item.emojiId === emojiId);
-        if(idx === -1) {
-          updatedUser.emoji.push({emojiId: emojiId, count: summary[emojiId]});
-        } else {
-          updatedUser.emoji[idx] = {emojiId: emojiId, count: user.emoji[idx].count + summary[emojiId]};
-        }
-      });
-      users.replaceOne({userId: author}, updatedUser);
-    }
-  });
-}
-
-function retrieve(author, callback) {
-  const db = mongoClient.db();
-  const users = db.collection('users');
-
-  users.findOne({userId: author}, (err, user) => {
-    if(!user) {
-      callback(null);
-    }
-    callback(user.emoji);
-  });
-}
-
-/*
-function updateDB(author, summary) {
-  if(!DB.hasOwnProperty(author)) {
-    DB[author] = [];
-  }
-
-  Object.keys(summary).forEach((emojiId) => {
-    let idx = DB[author].findIndex((item) => item.emojiId == emojiId);
-    if(idx == -1) {
-      DB[author].push({emojiId: emojiId, count: 0});
-      idx = DB[author].length - 1;
-    }
-    let idxT = DB[author].findIndex((item) => item.emojiId == TOTAL);
-    if(idxT == -1) {
-      DB[author].push({emojiId: TOTAL, count: 0});
-      idxT = DB[author].length - 1;
-    }
-    let idxTT = DB[TOTAL].findIndex((item) => item.emojiId == emojiId);
-    if(idxTT == -1) {
-      DB[TOTAL].push({emojiId: emojiId, count: 0});
-      idxTT = DB[TOTAL].length - 1;
-    }
-    let idxTTT = DB[TOTAL].findIndex((item) => item.emojiId == TOTAL);
-    if(idxTTT == -1) {
-      DB[TOTAL].push({emojiId: TOTAL, count: 0});
-      idxTTT = DB[TOTAL].length - 1;
-    }
-    DB[author][idx].count += summary[emojiId];
-    DB[author][idxT].count += summary[emojiId];
-    DB[TOTAL][idxTT].count += summary[emojiId];
-    DB[TOTAL][idxTTT].count += summary[emojiId];
-  });
-}
-
-function retrieveDB(author) {
-  DB[author].sort((a, b) => b.count - a.count);
-  DB[TOTAL].sort((a, b) => b.count - a.count);
-  return {author: DB[author], total: DB[TOTAL]};
-}
-*/
