@@ -12,11 +12,15 @@ const USERID_REGEXP = /<@!?(\d*)>/;
 
 const COMMAND_PREFIX = ".nanami";
 const ROW_COUNT = "80";
+const DEFAULT_LINES = 20;
 
 const Users = new UsersRepository();
 
 const commands = {
-  display,
+  "display": displayDefault,
+  "display-page": displayPage,
+  "display-server": displayServer,
+  "display-server-page": displayServerPage,
 };
 
 // Login
@@ -65,9 +69,7 @@ function handleCommand(msg) {
     return;
   }
 
-  const fArgs = args.slice(1);
-  fArgs.unshift(msg);
-  commands[args[0]].apply(null, fArgs); //executes command
+  commands[args[0]](msg, args.slice(1)) //executes command
 }
 
 function combineEmoji(emojiLists) {
@@ -85,7 +87,7 @@ function combineEmoji(emojiLists) {
   return masterList;
 }
 
-function displayHelp(msg, emoji) {
+function displayHelp(msg, userIds, emoji, options) {
   emoji.sort((a, b) => b.count - a.count);
 
   let guildEmojis = [];
@@ -94,32 +96,87 @@ function displayHelp(msg, emoji) {
   });
 
   let max = 1;
+  let total = 0;
   emoji.forEach((item) => {
     if(guildEmojis.some((x) => x === item.emojiId)) {
+      total += 1;
       if(item.count > max) {
         max = item.count;
       }
     }
   });
-
-  let response = "";
+  let listUsers = "";
+  userIds.forEach((id) => {
+    listUsers = listUsers + "<@!" + id + ">,";
+  });
+  listUsers = listUsers.substring(0, listUsers.length - 1);
+  let count = 0;
+  let offset = 0;
+  if(options && options.page) {
+    offset = (options.page - 1) * DEFAULT_LINES;
+  }
+  let response = "Emoji stats for " + listUsers + ":\n\n";
   emoji.forEach((item) => {
     if(guildEmojis.some((x) => x === item.emojiId)) {
+      if(offset > 0) {
+        offset -= 1;
+        return;
+      }
+      if(count >= DEFAULT_LINES) {
+        return;
+      }
+      count += 1;
       if(response.length >= 1800) {
         msg.channel.send(response);
         response = "";
       }
       response += "`";
-      for(let i = 0; i < item.count * ROW_COUNT / max - 3; i++) {
+      for(let i = 0; i < item.count * ROW_COUNT / max; i++) {
         response += " ";
       }
       response += "" + item.count + " ` <" + item.emojiId + ">\n";
     }
   });
+  if(options && options.page) {
+    response += `\n(Displaying page ${options.page} of ${Math.ceil(total/DEFAULT_LINES)})`;
+  } else {
+    response += `\n(Displaying page 1 of ${Math.ceil(total/DEFAULT_LINES)})`;
+  }
+
   msg.channel.send(response);
 }
 
-function display(msg, ...userRefs) {
+function getServerMembersAsRefs(guild) {
+  userRefs = [];
+  guild.members.forEach((member) => {
+    if(!member.user.bot) {
+      userRefs.push(`<@${member.id}>`);
+    }
+  });
+  return userRefs;
+}
+
+function calcOffsetFromPage(page) {
+  return (page - 1) * DEFAULT_LINES;
+}
+
+function displayDefault(msg, args) {
+  display(msg, args);
+}
+
+function displayPage(msg, args) {
+  display(msg, args.slice(1), {page: args[0]});
+}
+
+function displayServer(msg, args) {
+  display(msg, getServerMembersAsRefs(msg.guild));
+}
+
+function displayServerPage(msg, args) {
+  display(msg, getServerMembersAsRefs(msg.guild), {page: args[0]});
+}
+
+function display(msg, userRefs, options) {
   if(userRefs.length === 0) {
     msg.channel.send("No users given.");
     return;
@@ -144,7 +201,7 @@ function display(msg, ...userRefs) {
         msg.channel.send("Nothing to display.");
         return;
       }
-      displayHelp(msg, user.emoji);
+      displayHelp(msg, userIds, user.emoji, options);
       return;
     });
   } else {
@@ -158,7 +215,7 @@ function display(msg, ...userRefs) {
         msg.channel.send("Nothing to display.");
         return;
       }
-      displayHelp(msg, combinedEmoji);
+      displayHelp(msg, userIds, combinedEmoji, options);
       return;
     });
   }
