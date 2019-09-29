@@ -19,8 +19,6 @@ const Users = new UsersRepository();
 const commands = {
   "display": displayDefault,
   "display-page": displayPage,
-  "display-server": displayServer,
-  "display-server-page": displayServerPage,
 };
 
 // Login
@@ -137,6 +135,7 @@ function displayHelp(msg, userIds, emoji, options) {
       response += "" + item.count + " ` <" + item.emojiId + ">\n";
     }
   });
+
   if(options && options.page) {
     response += `\n(Displaying page ${options.page} of ${Math.ceil(total/DEFAULT_LINES)})`;
   } else {
@@ -168,15 +167,11 @@ function displayPage(msg, args) {
   display(msg, args.slice(1), {page: args[0]});
 }
 
-function displayServer(msg, args) {
-  display(msg, getServerMembersAsRefs(msg.guild));
-}
-
-function displayServerPage(msg, args) {
-  display(msg, getServerMembersAsRefs(msg.guild), {page: args[0]});
-}
-
 function display(msg, userRefs, options) {
+  if(userRefs[0] === "server") {
+    userRefs = getServerMembersAsRefs(msg.guild);
+  }
+
   if(userRefs.length === 0) {
     msg.channel.send("No users given.");
     return;
