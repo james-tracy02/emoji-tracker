@@ -20,7 +20,6 @@ const commands = {
   "display": displayDefault,
   "display-page": displayPage,
   "display-emoji": displayEmoji,
-  "display-emoji-animated": displayEmojiAnimated,
   "say": say,
   "use": use,
 };
@@ -205,12 +204,12 @@ function displayPage(msg, args) {
 }
 
 function displayEmoji(msg, args) {
-  displayOneEmoji(msg, args[0]);
-}
-
-function displayEmojiAnimated(msg, args) {
   const animatedEmoji = msg.guild.emojis.find((emoji) => emoji.name === args[0]);
-  displayOneEmoji(msg, `<a:${animatedEmoji.identifier}>`);
+  if(animatedEmoji) {
+    displayOneEmoji(msg, `<a:${animatedEmoji.identifier}>`);
+  } else {
+    displayOneEmoji(msg, args[0]);
+  }
 }
 
 function displayOneEmoji(msg, emojiRef) {
@@ -269,14 +268,24 @@ function say(msg, args) {
 }
 
 function use(msg, args) {
-  const emoji = client.emojis.find(emoji => emoji.name === args[0]);
-  if(!emoji) {
-    msg.channel.send("I can't find that emoji.");
+  msg.delete();
+  const emojis = [];
+  if(args && args.length > 0) {
+    args.forEach((argEmoji) => {
+      let newEmoji = client.emojis.find(emoji => emoji.name === argEmoji);
+      if(newEmoji) {
+        emojis.push(newEmoji);
+      } else {
+        emojis.push(argEmoji);
+      }
+    });
+  } else {
     return;
   }
-  msg.delete();
+  let content = "";
+  emojis.forEach((emoji) => content = content + emoji + " ");
   msg.channel.send(msg.member.displayName + ":");
-  msg.channel.send("" + emoji)
+  msg.channel.send(content)
   .then((nmsg) => {
     const emojiIds = getEmojiIds(nmsg.content);
     const author = msg.author;
