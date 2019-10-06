@@ -21,6 +21,7 @@ const commands = {
   "display-page": displayPage,
   "display-emoji": displayEmoji,
   "say": say,
+  "use": use,
 };
 
 // Login
@@ -218,7 +219,7 @@ function displayOneEmoji(msg, emojiRef) {
   if(!emojiRef) {
     msg.channel.send("No emoji provided!");
   }
-  
+
   const emojiMatch = emojiRef.match(ID_REGEXP);
   if(emojiMatch) {
     emojiId = emojiMatch[1];
@@ -259,6 +260,12 @@ function say(msg, args) {
     response = response + word + " ";
   })
   msg.channel.send(response.substring(0, response.length - 1));
+}
+
+function use(msg, args) {
+  msg.delete();
+  const emoji = client.emojis.find(emoji => emoji.name === args[0]);
+  msg.channel.send("" + emoji);
 }
 
 function display(msg, userRefs, options) {
