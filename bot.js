@@ -6,8 +6,8 @@ const UsersRepository = require("./users.js");
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 
-const EMOJI_REGEXP = /<:[\w|\d]*:\d*>/g;
-const ID_REGEXP = /<(:[\w|\d]*:\d*)>/;
+const EMOJI_REGEXP = /<a?:[\w|\d]*:\d*>/g;
+const ID_REGEXP = /<(a?:[\w|\d]*:\d*)>/;
 const USERID_REGEXP = /<@!?(\d*)>/;
 
 const COMMAND_PREFIX = ".nanami";
@@ -20,6 +20,7 @@ const commands = {
   "display": displayDefault,
   "display-page": displayPage,
   "display-emoji": displayEmoji,
+  "display-emoji-animated": displayEmojiAnimated,
   "say": say,
   "use": use,
 };
@@ -130,7 +131,7 @@ function displayHelp(msg, userIds, emoji, options) {
   let max = 1;
   let total = 0;
   emoji.forEach((item) => {
-    if(guildEmojis.some((x) => x === item.emojiId)) {
+    if(guildEmojis.some((x) => x === item.emojiId || "a" + x === item.emojiId)) {
       total += 1;
       if(item.count > max) {
         max = item.count;
@@ -150,7 +151,7 @@ function displayHelp(msg, userIds, emoji, options) {
   let rank = 0;
   let response = "Emoji stats for " + listUsers + ":\n\n";
   emoji.forEach((item) => {
-    if(guildEmojis.some((x) => x === item.emojiId)) {
+    if(guildEmojis.some((x) => x === item.emojiId || "a" + x === item.emojiId)) {
       if(offset > 0) {
         offset -= 1;
         return;
@@ -205,6 +206,11 @@ function displayPage(msg, args) {
 
 function displayEmoji(msg, args) {
   displayOneEmoji(msg, args[0]);
+}
+
+function displayEmojiAnimated(msg, args) {
+  const animatedEmoji = msg.guild.emojis.find((emoji) => emoji.name === args[0]);
+  displayOneEmoji(msg, `<a:${animatedEmoji.identifier}>`);
 }
 
 function displayOneEmoji(msg, emojiRef) {
@@ -263,9 +269,21 @@ function say(msg, args) {
 }
 
 function use(msg, args) {
-  msg.delete();
   const emoji = client.emojis.find(emoji => emoji.name === args[0]);
-  msg.channel.send("" + emoji);
+  if(!emoji) {
+    msg.channel.send("I can't find that emoji.");
+    return;
+  }
+  msg.delete();
+  msg.channel.send(msg.member.displayName + ":");
+  msg.channel.send("" + emoji)
+  .then((nmsg) => {
+    const emojiIds = getEmojiIds(nmsg.content);
+    const author = msg.author;
+    const summary = summarize(emojiIds);
+    Users.updateAsync(author.id, summary);
+  });
+  return;
 }
 
 function display(msg, userRefs, options) {
