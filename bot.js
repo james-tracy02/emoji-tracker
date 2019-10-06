@@ -22,7 +22,15 @@ const commands = {
   "display-emoji": displayEmoji,
   "say": say,
   "use": use,
+  "help": help,
 };
+
+const helpMsg = "`.nanami display [@nickname1 @nickname2 ...] OR ['server']` - display emoji usage stats for the given users (saying 'server' shows stats for all users in the server)\n\n" +
+"`.nanami display-page [page#] [@nickname1 @nickname2 ...] OR ['server']` - navigate through pages if there are more than 20 items\n\n" +
+"`.nanami display-emoji [emoji] OR [emoji name]` - display the usage stats of a given emoji, the emoji can be given as an emoji or the name of the emoji can be provided\n\n" +
+"`.nanami say [text]` - nanami will say the given text\n\n" +
+"`.nanami use [text]` - nanami sends a message on your behalf, replacing all emoji names with the emojis themselves (allows animated emojis to be used without nitro)\n\n" +
+"`.nanami help` - display this message";
 
 // Login
 client.login(TOKEN);
@@ -49,6 +57,9 @@ client.on('message', msg => {
 
 });
 
+function help(msg, args) {
+  msg.channel.send(helpMsg);
+}
 
 // Message event handling
 function isCommand(msg) {
