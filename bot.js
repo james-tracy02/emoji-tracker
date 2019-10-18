@@ -62,13 +62,16 @@ function isCommand(msg) {
 
 function handleCommand(msg) {
   let rest = msg.content.substring(COMMAND_PREFIX.length + 1);
-  const tokens = rest.split(/[\s+]/);
-  if(tokens.length === 0) {
+  const tokens = rest.split(/(\s+)/);
+  const args = rest.split(/[\s+]/);
+  console.log(msg.content);
+  console.log(tokens);
+  if(args.length === 0) {
     return;
   }
 
-  if(commands.hasOwnProperty(tokens[0])) {
-    commands[tokens[0]](msg, tokens.slice(1));
+  if(commands.hasOwnProperty(args[0])) {
+    commands[args[0]](msg, args.slice(1), tokens.slice(1));
   } else{
     msg.channel.send("I don't know how to do that.");
   }
@@ -255,20 +258,20 @@ function displayOneEmoji(msg, emojiRef) {
   });
 }
 
-function say(msg, args) {
+function say(msg, args, tokens) {
   msg.delete();
   let response = "";
-  args.forEach((word) => {
-    response = response + word + " ";
+  tokens.forEach((word) => {
+    response = response + word;
   })
-  msg.channel.send(response.substring(0, response.length - 1));
+  msg.channel.send(response);
 }
 
-function use(msg, args) {
+function use(msg, args, tokens) {
   msg.delete();
   const emojis = [];
-  if(args && args.length > 0) {
-    args.forEach((argEmoji) => {
+  if(tokens && tokens.length > 0) {
+    tokens.forEach((argEmoji) => {
       let newEmoji = client.emojis.find(emoji => emoji.name === argEmoji);
       if(newEmoji) {
         emojis.push(newEmoji);
@@ -280,7 +283,7 @@ function use(msg, args) {
     return;
   }
   let content = "";
-  emojis.forEach((emoji) => content = content + emoji + " ");
+  emojis.forEach((emoji) => content = content + emoji);
   msg.channel.send(msg.member.displayName + ":");
   msg.channel.send(content)
   .then((nmsg) => {
