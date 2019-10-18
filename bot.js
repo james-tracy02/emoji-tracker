@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const dotenv = require("dotenv"); dotenv.config();
+const fs = require("fs");
 
 const UsersRepository = require("./users.js");
 
@@ -25,13 +26,6 @@ const commands = {
   "help": help,
 };
 
-const helpMsg = "`.nanami display [@nickname1 @nickname2 ...] OR ['server']` - display emoji usage stats for the given users (saying 'server' shows stats for all users in the server)\n\n" +
-"`.nanami display-page [page#] [@nickname1 @nickname2 ...] OR ['server']` - navigate through pages if there are more than 20 items\n\n" +
-"`.nanami display-emoji [emoji] OR [emoji name]` - display the usage stats of a given emoji, the emoji can be given as an emoji or the name of the emoji can be provided\n\n" +
-"`.nanami say [text]` - nanami will say the given text\n\n" +
-"`.nanami use [text]` - nanami sends a message on your behalf, replacing all emoji names with the emojis themselves (allows animated emojis to be used without nitro)\n\n" +
-"`.nanami help` - display this message";
-
 // Login
 client.login(TOKEN);
 client.on('ready', () => {
@@ -46,7 +40,7 @@ client.on('message', msg => {
 
   if(isCommand(msg)) {
     handleCommand(msg);
-    return
+    return;
   }
 
   const emojiIds = getEmojiIds(msg.content);
@@ -54,10 +48,10 @@ client.on('message', msg => {
   const summary = summarize(emojiIds);
   Users.updateAsync(author.id, summary);
   return;
-
 });
 
-function help(msg, args) {
+function help(msg) {
+  const helpMsg = fs.readFileSync("./help.txt").toString();
   msg.channel.send(helpMsg);
 }
 
@@ -68,24 +62,16 @@ function isCommand(msg) {
 
 function handleCommand(msg) {
   let rest = msg.content.substring(COMMAND_PREFIX.length + 1);
-  const args = [];
-  let n = 0;
-
-  while(rest.indexOf(" ") !== -1) {
-    args.push(rest.substring(0, rest.indexOf(" ")));
-    rest = rest.substring(rest.indexOf(" ") + 1);
-  }
-  args.push(rest);
-
-  if(args.length === 0) {
+  const tokens = rest.split(/[\s+]/);
+  if(tokens.length === 0) {
     return;
   }
 
-  if(commands.hasOwnProperty(args[0])) {
-    commands[args[0]](msg, args.slice(1));
+  if(commands.hasOwnProperty(tokens[0])) {
+    commands[tokens[0]](msg, tokens.slice(1));
   } else{
     msg.channel.send("I don't know how to do that.");
-  } //executes command
+  }
 }
 
 function combineEmoji(emojiLists) {
@@ -215,8 +201,8 @@ function displayPage(msg, args) {
 }
 
 function displayEmoji(msg, args) {
-  const animatedEmoji = msg.guild.emojis.find((emoji) => emoji.name === args[0]);
-  if(animatedEmoji) {
+  const emoji = msg.guild.emojis.find((emoji) => ":" + emoji.name === args[0]);
+  if(emoji.animated) {
     displayOneEmoji(msg, `<a:${animatedEmoji.identifier}>`);
   } else {
     displayOneEmoji(msg, args[0]);
