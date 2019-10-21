@@ -26,6 +26,8 @@ const commands = {
   "help": help,
 };
 
+const helpMsg = fs.readFileSync("./help.txt").toString();
+
 // Login
 client.login(TOKEN);
 client.on('ready', () => {
@@ -38,7 +40,7 @@ client.on('message', msg => {
     return;
   }
 
-  if(isCommand(msg)) {
+  if(msg.content.startsWith(COMMAND_PREFIX)) {
     handleCommand(msg);
     return;
   }
@@ -50,26 +52,13 @@ client.on('message', msg => {
   return;
 });
 
-function help(msg) {
-  const helpMsg = fs.readFileSync("./help.txt").toString();
-  msg.channel.send(helpMsg);
-}
-
-// Message event handling
-function isCommand(msg) {
-  return msg.content.startsWith(COMMAND_PREFIX);
-}
-
 function handleCommand(msg) {
   let rest = msg.content.substring(COMMAND_PREFIX.length + 1);
   const tokens = rest.split(/(\s+)/);
   const args = rest.split(/[\s+]/);
-  console.log(msg.content);
-  console.log(tokens);
   if(args.length === 0) {
     return;
   }
-
   if(commands.hasOwnProperty(args[0])) {
     commands[args[0]](msg, args.slice(1), tokens.slice(1));
   } else{
@@ -78,7 +67,7 @@ function handleCommand(msg) {
 }
 
 function combineEmoji(emojiLists) {
-  masterList = [];
+  const masterList = [];
   emojiLists.forEach((emojiList) => {
     emojiList.forEach((emoji) => {
       const idx = masterList.findIndex((x) => x.emojiId === emoji.emojiId);
@@ -92,7 +81,11 @@ function combineEmoji(emojiLists) {
   return masterList;
 }
 
-function displayOneEmojiHelp(msg, emojiId, counts) {
+function help(msg) {
+  msg.channel.send(helpMsg);
+}
+
+function displayOneEmojiHelp(msg, emoji, counts) {
   counts.sort((a, b) => b.count - a.count);
 
   let max = 1;
@@ -102,8 +95,7 @@ function displayOneEmojiHelp(msg, emojiId, counts) {
     }
   });
 
-  const emojiName = `<${emojiId}>`;
-  let response = "Usage stats for " + emojiName + ":\n\n";
+  let response = `Usage stats for ${emoji.toString()}:\n\n`;
   counts.forEach((item) => {
     if(response.length >= 1800) {
       msg.channel.send(response);
@@ -121,16 +113,18 @@ function displayOneEmojiHelp(msg, emojiId, counts) {
 
 function displayHelp(msg, userIds, emoji, options) {
   emoji.sort((a, b) => b.count - a.count);
-
   let guildEmojis = [];
   msg.guild.emojis.forEach((emoji) => {
-    guildEmojis.push(`:${emoji.identifier}`);
+    if(emoji.animated) {
+      guildEmojis.push(`a:${emoji.identifier}`)
+    } else {
+      guildEmojis.push(`:${emoji.identifier}`);
+    }
   });
-
   let max = 1;
   let total = 0;
   emoji.forEach((item) => {
-    if(guildEmojis.some((x) => x === item.emojiId || "a" + x === item.emojiId)) {
+    if(guildEmojis.some((guildEmoji) => item.emojiId === guildEmoji)) {
       total += 1;
       if(item.count > max) {
         max = item.count;
@@ -139,9 +133,9 @@ function displayHelp(msg, userIds, emoji, options) {
   });
   let listUsers = "";
   userIds.forEach((id) => {
-    listUsers = listUsers + "<@!" + id + ">,";
+    listUsers = listUsers + "<@!" + id + ">, ";
   });
-  listUsers = listUsers.substring(0, listUsers.length - 1);
+  listUsers = listUsers.substring(0, listUsers.length - 2);
   let count = 0;
   let offset = 0;
   if(options && options.page) {
@@ -150,7 +144,7 @@ function displayHelp(msg, userIds, emoji, options) {
   let rank = 0;
   let response = "Emoji stats for " + listUsers + ":\n\n";
   emoji.forEach((item) => {
-    if(guildEmojis.some((x) => x === item.emojiId || "a" + x === item.emojiId)) {
+    if(guildEmojis.some((guildEmoji) => item.emojiId === guildEmoji)) {
       if(offset > 0) {
         offset -= 1;
         return;
@@ -181,14 +175,14 @@ function displayHelp(msg, userIds, emoji, options) {
   msg.channel.send(response);
 }
 
-function getServerMembersAsRefs(guild) {
-  userRefs = [];
+function getUserIds(guild) {
+  const userIds = [];
   guild.members.forEach((member) => {
     if(!member.user.bot) {
-      userRefs.push(`<@${member.id}>`);
+      userIds.push(member.user.id);
     }
   });
-  return userRefs;
+  return userIds;
 }
 
 function calcOffsetFromPage(page) {
@@ -204,65 +198,34 @@ function displayPage(msg, args) {
 }
 
 function displayEmoji(msg, args) {
-  const emoji = msg.guild.emojis.find((emoji) => ":" + emoji.name === args[0]);
-  if(emoji.animated) {
-    displayOneEmoji(msg, `<a:${animatedEmoji.identifier}>`);
+  const emoji = msg.guild.emojis.find((emoji) => emoji.name === args[0] || emoji.toString() === args[0]);
+  if(emoji) {
+    displayOneEmoji(msg, emoji);
   } else {
-    displayOneEmoji(msg, args[0]);
+    msg.channel.send("Invalid emoji.");
   }
 }
 
-function displayOneEmoji(msg, emojiRef) {
-  const userRefs = getServerMembersAsRefs(msg.guild);
-
-  if(userRefs.length === 0) {
-    msg.channel.send("No valid users.");
-    return;
-  }
-
-  let emojiId;
-  if(!emojiRef) {
-    msg.channel.send("No emoji provided!");
-  }
-
-  const emojiMatch = emojiRef.match(ID_REGEXP);
-  if(emojiMatch) {
-    emojiId = emojiMatch[1];
-  } else {
-    msg.channel.send("Invalid emoji!");
-    return;
-  }
-
-  userIds = [];
-  userRefs.forEach((x) => {
-    const match = x.match(USERID_REGEXP);
-    if(match) {
-      userIds.push(match[1]);
-    }
-  });
-
-  if(userIds.length === 0) {
-    msg.channel.send("Invalid users.")
-    return;
-  }
+function displayOneEmoji(msg, emoji) {
+  const userIds = getUserIds(msg.guild);
 
   Users.retrieveManyAsync(userIds, (err, users) => {
     const counts = [];
     users.forEach((user) => {
-      let idx = user.emoji.findIndex((x) => x.emojiId === emojiId);
+      let idx = user.emoji.findIndex((x) => identifiesEmoji(x.emojiId, emoji));
       if(idx !== -1) {
         counts.push({"userId": user.userId, "count": user.emoji[idx].count});
       }
     });
-    displayOneEmojiHelp(msg, emojiId, counts);
+    displayOneEmojiHelp(msg, emoji, counts);
   });
 }
 
 function say(msg, args, tokens) {
   msg.delete();
   let response = "";
-  tokens.forEach((word) => {
-    response = response + word;
+  tokens.forEach((token) => {
+    response = response + token;
   })
   msg.channel.send(response);
 }
@@ -296,25 +259,20 @@ function use(msg, args, tokens) {
 }
 
 function display(msg, userRefs, options) {
+  let userIds = [];
   if(userRefs[0] === "server") {
-    userRefs = getServerMembersAsRefs(msg.guild);
+    userIds = getUserIds(msg.guild);
+  } else {
+    userRefs.forEach((userRef) => {
+      const match = userRef.match(USERID_REGEXP);
+      if(match) {
+        userIds.push(match[1]);
+      }
+    });
   }
-
-  if(userRefs.length === 0) {
-    msg.channel.send("No users given.");
-    return;
-  }
-
-  userIds = [];
-  userRefs.forEach((x) => {
-    const match = x.match(USERID_REGEXP);
-    if(match) {
-      userIds.push(match[1]);
-    }
-  });
 
   if(userIds.length === 0) {
-    msg.channel.send("Invalid users.")
+    msg.channel.send("No valid users!")
     return;
   }
 
@@ -344,12 +302,16 @@ function display(msg, userRefs, options) {
   }
 }
 
+function identifiesEmoji(id, emoji) {
+  return `<${id}>` === emoji.toString();
+}
+
 // Message interpretting
 function getEmojiIds(content) {
   const emoji = content.match(EMOJI_REGEXP);
   let ids = [];
   if(emoji) {
-    emoji.forEach((item, idx) => {
+    emoji.forEach((item) => {
       const id = item.match(ID_REGEXP)[1];
       ids.push(id);
     });
