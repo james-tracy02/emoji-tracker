@@ -105,7 +105,7 @@ function displayOneEmojiHelp(msg, emoji, counts) {
     for(let i = 0; i < item.count * ROW_COUNT / max - 2; i++) {
       response += " ";
     }
-    response += "" + item.count + " ` <@" + item.userId + ">\n";
+    response += "" + item.count + " ` " + userIdToNickname(msg.guild, item.userId) + "\n";
   });
 
   msg.channel.send(response);
@@ -133,7 +133,7 @@ function displayHelp(msg, userIds, emoji, options) {
   });
   let listUsers = "";
   userIds.forEach((id) => {
-    listUsers = listUsers + "<@!" + id + ">, ";
+    listUsers = listUsers + userIdToNickname(msg.guild, id) + ", ";
   });
   listUsers = listUsers.substring(0, listUsers.length - 2);
   let count = 0;
@@ -268,6 +268,9 @@ function display(msg, userRefs, options) {
       if(match) {
         userIds.push(match[1]);
       }
+      if(userRef === "me") {
+        userIds.push(msg.author.id);
+      }
     });
   }
 
@@ -328,4 +331,9 @@ function summarize(ids) {
     uniqueIds[item] += 1;
   });
   return uniqueIds;
+}
+
+function userIdToNickname(guild, userId) {
+  const nickname = guild.members.get(userId).displayName;
+  return nickname;
 }
