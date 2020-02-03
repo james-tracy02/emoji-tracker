@@ -25,5 +25,5 @@ client.on('message', message => {
   }
 
   const emoji = Parser.parseEmoji(message);
-    nanami.recordEmoji(message.author.id, emoji);
+  nanami.recordEmoji(message.author.id, emoji);
 });

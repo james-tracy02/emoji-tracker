@@ -22,10 +22,9 @@ function parseCommand(message) {
       return { type: 'HELP', message: message };
     case 'view':
       return parseViewCommand(message, toks);
-    case 'display':
-      return parseViewCommand(message, toks);
-    case 'say':
-      return { type: 'SAY', message: message, text: message.content };
+    case 'msg':
+      let text = message.content.substring(COMMAND_PREFIX.length + 4);
+      return { type: 'MSG', message: message, text: text };
     default:
       return { type: 'IVALID', message: message };
   }

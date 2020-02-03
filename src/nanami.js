@@ -31,8 +31,9 @@ class Nanami {
       case 'VIEW_EMOJI':
         this.viewEmoji(command.message, command.emoji, command.emojiName, command.display, command.count, command.scope);
         return;
-      case 'SAY':
+      case 'MSG':
         this.say(command.message, command.text);
+        return;
       default:
         this.invalid(command.message);
         return;
@@ -145,7 +146,30 @@ class Nanami {
   }
 
   say(message, text) {
-    message.channel.send(text);
+    message.delete();
+    let newText = '**' + this.userToNickname(message.guild, message.author.id) + ':**';
+    message.channel.send(newText);
+    newText = '';
+    const toks = text.split(/(\s+)/);
+    const emoji = [];
+    toks.forEach((token) => {
+      const emojiId = this.getEmojiFromName(token);
+      if(emojiId) {
+        emoji.push(emojiId);
+        newText += this.emojiToString(emojiId);
+      } else if (token == '\n'){
+        console.log(newText);
+        if(newText.length > 0)
+          message.channel.send(newText);
+        newText = '';
+      } else {
+        newText += token;
+      }
+    });
+    if(newText.length > 0)
+      message.channel.send(newText);
+
+    this.recordEmoji(message.author.id, emoji);
   }
 
   async viewEmoji(message, emoji, emojiName, display = 'page', count = 1, scope = 'local') {
@@ -193,9 +217,11 @@ class Nanami {
     const maxVal = records[0].count;
 
     // generate response
-    let response = '';
+    emojiName = this.client.emojis.get(emoji).name;
+    let response = '**' + emojiName + ':**\n';
     displaySet.forEach((record, i) => {
       response += this.generateBar(record.count, maxVal) + ' ';
+      response += this.emojiToString(emoji) + ' ';
       response += this.userToNickname(message.guild, record.user) + ' ';
       response += this.generateRank(page, i) + ' ';
       response += '\n';
@@ -255,7 +281,16 @@ class Nanami {
     const maxVal = records[0].count;
 
     // generate response
-    let response = '';
+    let username;
+    if(users === 'me' || users === 'my') {
+      username = this.userToNickname(message.guild, message.author.id);
+    } else if (users === 'server') {
+      username = 'Server';
+    } else {
+      username = 'All';
+    }
+
+    let response = '**' + username + ':**\n';
     displaySet.forEach((record, i) => {
       response += this.generateBar(record.count, maxVal) + ' ';
       response += this.emojiToString(record.emoji) + ' ';
