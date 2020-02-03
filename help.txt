@@ -1,6 +1,0 @@
-`.nanami display [@nickname1 @nickname2 ...] OR ['server']` - display emoji usage stats for the given users (saying 'server' shows stats for all users in the server)
-`.nanami display-page [page#] [@nickname1 @nickname2 ...] OR ['server']` - navigate through pages if there are more than 20 items
-`.nanami display-emoji [emoji] OR [emoji name]` - display the usage stats of a given emoji, the emoji can be given as an emoji or the name of the emoji can be provided
-`.nanami say [text]` - nanami will say the given text
-`.nanami use [text]` - nanami sends a message on your behalf, replacing all emoji names with the emojis themselves (allows animated emojis to be used without nitro)
-`.nanami help` - display this message

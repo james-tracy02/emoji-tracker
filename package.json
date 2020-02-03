@@ -6,14 +6,15 @@
   "dependencies": {
     "discord.js": "^11.5.1",
     "dotenv": "^8.1.0",
-    "mongodb": "^3.3.2"
+    "mongodb": "^3.3.2",
+    "mongoose": "^5.8.11"
   },
   "devDependencies": {
     "nodemon": "^1.19.2"
   },
   "scripts": {
-    "start": "node bot.js",
-    "test": "nodemon bot.js"
+    "start": "node src/client.js",
+    "test": "nodemon src/client.js"
   },
   "author": "James Tracy",
   "license": "ISC"

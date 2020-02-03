@@ -1,3 +1,4 @@
+/*
 const Discord = require("discord.js");
 const dotenv = require("dotenv"); dotenv.config();
 const fs = require("fs");
@@ -337,3 +338,4 @@ function userIdToNickname(guild, userId) {
   const nickname = guild.members.get(userId).displayName;
   return nickname;
 }
+*/

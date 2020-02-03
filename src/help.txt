@@ -1,0 +1,10 @@
+Commands
+
+`.nanami help` - Display this help message.
+
+`.nanami view` - Display stats for a given user or emoji.
+  *Parameters*
+  - `target` - The target of the query. Can be a user tag (@User) or an emoji.
+  - `display` - The display mode. Can either be the keyword `top` or `page`. *optional*
+  - `count` - The number of entries to display (if display is `top`), or the page number (if display is `page`). *optional if display parameter not specified*
+  - `scope` - The scope of the query. Can either be the keyword `local` for only results related to this guild, or `global` for all results. *optional*
