@@ -286,8 +286,10 @@ class Nanami {
       username = this.userToNickname(message.guild, message.author.id);
     } else if (users === 'server') {
       username = 'Server';
-    } else {
+    } else if (users === 'all') {
       username = 'All';
+    } else {
+      username = this.userToNickname(message.guild, users);
     }
 
     let response = '**' + username + ':**\n';
