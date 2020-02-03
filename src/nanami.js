@@ -93,7 +93,7 @@ class Nanami {
 
   getEmoji() {
     const emojiList = [];
-    client.emojis.forEach((emoji) => emojiList.push(emoji.id));
+    this.client.emojis.forEach((emoji) => emojiList.push(emoji.id));
     return emojiList;
   }
 
