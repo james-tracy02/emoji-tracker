@@ -115,7 +115,10 @@ class Nanami {
   }
 
   userToNickname(guild, user) {
-    return guild.members.get(user).displayName;
+    if(guild.members.has(user)) {
+      return guild.members.get(user).displayName;
+    }
+    return this.client.users.get(user).username;
   }
 
   // Visualization
