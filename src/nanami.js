@@ -43,6 +43,7 @@ class Nanami {
   }
 
   execute(message, command) {
+            console.log(command);
     switch (command.type) {
       case 'none':
         this.none();

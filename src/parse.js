@@ -63,10 +63,6 @@ function parameterize(tokens, template) {
     }
     i++;
   }
-  // Too many tokens given
-  if(n < tokens.length - 1) {
-    return { type: 'invalid', command: command };
-  }
   return command;
 }
 
