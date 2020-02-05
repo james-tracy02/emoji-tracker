@@ -17,37 +17,31 @@ async function updateRecord(user, emoji, count) {
   return;
 }
 
-async function getRecordsForEmoji(emoji) {
-  const records = await Record.find({ emoji: emoji })
-                               .sort({ count: 'descending' });
-  return records;
+function getRecordsForEmoji(emoji) {
+  return Record.find({ emoji: emoji })
+               .sort({ count: 'descending' });
 }
 
-async function getRecordsForUser(user) {
-  const records = await Record.find({ user: user })
-                               .sort({ count: 'descending' });
-  return records;
+function getRecordsForUser(user) {
+  return Record.find({ user: user })
+               .sort({ count: 'descending' });
 }
 
-async function getRecordsForUsers(users) {
-  const records = await Record.aggregate([
+function getRecordsForUsers(users) {
+  return Record.aggregate([
     { $match: { user: { $in: users } } },
     { $group: { _id: '$emoji',
                 emoji: { $first: '$emoji'},
                 count: { $sum: '$count' }}}])
   .sort({ count: 'descending' });
-
-  return records;
 }
 
-async function getRecordsForAllUsers() {
-  const records = await Record.aggregate([
+function getRecordsForAllUsers() {
+  return Record.aggregate([
     { $group: { _id: '$emoji',
                 emoji: { $first: '$emoji'},
                 count: { $sum: '$count' }}}])
   .sort({ count: 'descending' });
-
-  return records;
 }
 
 module.exports = {

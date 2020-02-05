@@ -1,6 +1,0 @@
-Commands
-
-`.nanami help` - Display this help message.
-
-`.nanami view ([me/my/server/all] OR [emojiName/emoji]) [top/page] [number] [local/global]` - Query data on the given user or emoji.
-`.nanami msg` - Nanami sends a message on your behalf replacing emoji names with their respective emoji. Allows the use of animated emoji without nitro.

@@ -1,0 +1,81 @@
+[
+  {
+    "command": "help",
+    "description": "Display this help message.",
+    "aliases": ["help"],
+    "usage": "n.help",
+    "notes": "",
+    "parameters": []
+  },
+  {
+    "command": "view",
+    "description": "Query emoji usage stats on a given target.",
+    "aliases": ["view", "display"],
+    "usage": "n.view <target> <select> <index> <scope>",
+    "notes": "",
+    "parameters": [
+      {
+        "name": "target",
+        "type": {
+          "type": "String"
+        },
+        "description": "The target to query. Can be a user or an emoji.",
+        "optional": false
+      },
+      {
+        "name": "select",
+        "type": {
+          "type": "Enum",
+          "values": ["top", "page"]
+        },
+        "description": "The selection type of the query. `top` indicates the results with the highest count. `page` indicates an offset.",
+        "optional": true,
+        "default": "page"
+      },
+      {
+        "name": "index",
+        "type": {
+          "type": "Number"
+        },
+        "description": "The page number or number of items to be displayed.",
+        "optional": true,
+        "default": 1
+      },
+      {
+        "name": "scope",
+        "type": {
+          "type": "Enum",
+          "values": ["local", "global"]
+        },
+        "description": "The scope of the query. `local` indicates results related to this guild only. `global` indicates all results.",
+        "optional": true,
+        "default": "local"
+      }
+    ]
+  },
+  {
+    "command": "say",
+    "description": "Nanami sends a message on your behalf, replacing emoji names with emojis.",
+    "aliases": ["say"],
+    "usage": "n.say <text>",
+    "notes": "",
+    "parameters": []
+  },
+  {
+    "command": "info",
+    "description": "View information on a given command.",
+    "aliases": ["info"],
+    "usage": "n.info <command>",
+    "notes": "",
+    "parameters": [
+      {
+        "name": "command",
+        "type": {
+          "type": "String"
+        },
+        "description": "The command to lookup.",
+        "optional": false
+      }
+    ]
+  }
+]

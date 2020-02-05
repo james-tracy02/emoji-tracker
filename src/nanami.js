@@ -2,14 +2,17 @@
 
 const fs = require('fs');
 
-const Parser = require('./parse');
+const Parse = require('./parse');
+const Types = require('./types');
 const recordService = require('./service.js');
+const commands = require('./commands.json');
 
 const DEFAULT_LINES = 20;
 const DEFAULT_WIDTH = 80;
 const RESPONSE_CUTOFF = 1800;
-
-const helpMessage = fs.readFileSync('./src/help.txt').toString();
+const PREFIX = 'n.';
+const USERID_REGEXP = /<@!?(\d*)>/;
+const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
 
 class Nanami {
   constructor(client) {
@@ -18,25 +21,49 @@ class Nanami {
 
   ready() {
     console.log(`Logged in as ${this.client.user.tag}!`);
+    this.setStatus();
   }
 
-  execute(command) {
+  setStatus() {
+    this.client.user.setStatus(`Live in ${this.client.guilds.size} servers!`);
+  }
+
+  read(message) {
+    // If the message is not a command, handle it normally
+    if(!message.content.startsWith(PREFIX))
+      return this.handleMessage(message.author.id, message);
+
+    // Otherwise parse the command and execute
+    this.execute(message, Parse.command(message.content.substring(PREFIX.length)));
+  }
+
+  handleMessage(userId, message) {
+    // Record emoji usage and attribute to userId
+    this.recordEmoji(userId, Parse.emoji(message.content));
+  }
+
+  execute(message, command) {
     switch (command.type) {
-      case 'HELP':
-        this.help(command.message);
-        return;
-      case 'VIEW_USER':
-        this.viewUser(command.message, command.user, command.display, command.count, command.scope);
-        return;
-      case 'VIEW_EMOJI':
-        this.viewEmoji(command.message, command.emoji, command.emojiName, command.display, command.count, command.scope);
-        return;
-      case 'MSG':
-        this.say(command.message, command.text);
-        return;
+      case 'none':
+        this.none();
+        break;
+      case 'help':
+        this.help(message);
+        break;
+      case 'view':
+        this.view(message, command.target, command.select, command.index, command.scope);
+        break;
+      case 'say':
+        this.say(message, message.content.substring(PREFIX.length + 4));
+        break;
+      case 'info':
+        this.info(message, command.command);
+        break;
+      case 'invalid':
+        this.invalid(message, command.type);
+        break;
       default:
-        this.invalid(command.message);
-        return;
+        break;;
     }
   }
 
@@ -49,55 +76,249 @@ class Nanami {
         emojiCounts[emoji] = 1;
       }
     });
-
     Object.keys(emojiCounts).forEach((emoji) => {
       recordService.updateRecord(user, emoji, emojiCounts[emoji]);
     });
   }
 
-  getRecordsForUsers(message, users) {
-    let records;
-    switch (users) {
+  // Commands
+  none() {
+    return;
+  }
+
+  help(message) {
+    let helpMsg = '**Emoji Tracker** ***Nanami Bot***\n\n'
+    + '**Commands:**\n'
+    + '*Say* `n.info <command>` *to find out more!*\n\n';
+
+
+    commands.forEach((command) => {
+      helpMsg += '`' + command.command + '` - ' + command.description + '\n';
+    });
+
+    message.channel.send(helpMsg);
+  }
+
+  view(message, target, select, index, scope) {
+    const user = this.matchUser(target);
+    if(user)
+      return this.viewUser(message, user, select, index, scope);
+
+    const emoji = this.matchEmoji(target);
+    if(emoji)
+      return this.viewEmoji(message, emoji, select, index, scope);
+
+    return this.invalid(message, 'view');
+  }
+
+  say(message, text) {
+    message.delete();
+    let newText = '**' + this.userToNickname(message.guild, message.author.id) + ':**';
+    message.channel.send(newText);
+    newText = '';
+    const toks = text.split(/(\s+)/);
+    const emoji = [];
+    toks.forEach((token) => {
+      const emojiId = this.getEmojiFromName(token);
+      if(emojiId) {
+        emoji.push(emojiId);
+        newText += this.emojiToString(emojiId);
+      } else if (token == '\n'){
+        console.log(newText);
+        if(newText.length > 0)
+          message.channel.send(newText);
+        newText = '';
+      } else {
+        newText += token;
+      }
+    });
+    if(newText.length > 0)
+      message.channel.send(newText);
+
+    this.recordEmoji(message.author.id, emoji);
+  }
+
+  info(message, name) {
+    const command = commands.find((command) => command.command === name);
+    let cmdMsg = '**Command:** ' + command.command + '\n'
+    + '\t**Description:** *' + command.description + '*\n'
+    + '\t**Aliases:** ';
+    command.aliases.forEach((alias) => {
+      cmdMsg += '`' + alias + '` ';
+    });
+    cmdMsg += '\n';
+    cmdMsg += '\t**Usage:** `' + command.usage + '`\n';
+    if(command.parameters.length != 0) {
+      cmdMsg += '\t**Parameters:**\n';
+      command.parameters.forEach((parameter) => {
+        cmdMsg += '\t\t**' + parameter.name + '** [' + parameter.type.type + ']: ';
+        cmdMsg += '*' + parameter.description + '*';
+        if(parameter.optional)
+          cmdMsg += ' (Optional)';
+        cmdMsg += '\n';
+      });
+    }
+
+    message.channel.send(cmdMsg);
+  }
+
+  invalid(message) {
+    message.channel.send("I don't know how to do that.");
+  }
+
+  matchUser(target) {
+    if(['me', 'my', 'server', 'all'].includes(target)) {
+      return target;
+    }
+    const match = target.match(USERID_REGEXP);
+    if(match) {
+      return match[1];
+    }
+  }
+
+  matchEmoji(target) {
+    const match = target.match(ID_REGEXP);
+    if(match) {
+      return match[1];
+    }
+
+    return this.getEmojiFromName(target);
+  }
+
+  async viewUser(message, user, select, index, scope) {
+    let validEmoji;
+    if(scope === 'global')
+      validEmoji = this.getClientEmoji();
+    if(scope === 'local')
+      validEmoji = this.getGuildEmoji(message.guild);
+
+    // filter by scope
+    let records = await this.getRecordsForUsers(message, user);
+    records = records.filter((record) => validEmoji.includes(record.emoji));
+
+    // generate response
+    let username;
+    switch (user) {
       case 'me':
-        records = recordService.getRecordsForUser(message.author.id);
-        break;
       case 'my':
-        records = recordService.getRecordsForUser(message.author.id);
+        username = this.userToNickname(message.guild, message.author.id);
         break;
       case 'server':
-        records = recordService.getRecordsForUsers(this.getUsers(message.guild));
+        username = 'Server';
         break;
       case 'all':
-        records = recordService.getRecordsForAllUsers();
+        username = 'All Users';
         break;
       default:
-        records = recordService.getRecordsForUser(users);
+        username = this.userToNickname(message.guild, user)
         break;
     }
-    return records;
+
+    const page = ((select === 'page') ? index : 1);
+    const lines = ((select === 'top') ? index : DEFAULT_LINES);
+    const maxVal = records[0].count;
+    const displaySet = this.getDisplaySet(records, page, lines);
+
+    let response = '**' + username + (scope === global ? '(Global)' : '') + ':**\n';
+    displaySet.forEach((record, i) => {
+      response += this.generateBar(record.count, maxVal) + ' ';
+      response += this.emojiToString(record.emoji) + ' ';
+      response += this.generateRank(page, i) + ' ';
+      response += '\n';
+
+      // if response too long
+      if(response.length >= RESPONSE_CUTOFF) {
+        message.channel.send(response);
+        response = '';
+      }
+    });
+    if(select === 'page')
+      response += '\n Page ' + page + ' of ' + Math.ceil(records.length/DEFAULT_LINES) + '.';
+    message.channel.send(response);
+  }
+
+  async viewEmoji(message, emoji, select, index, scope) {
+    let records = await this.getRecordsForEmoji(emoji);
+
+    if(scope === 'local') {
+      const validUsers = this.getGuildMemberIds(message.guild);
+      records = records.filter((record) => validUsers.includes(record.user));
+    }
+    const page = ((select === 'page') ? index : 1);
+    const lines = ((select === 'top') ? index : DEFAULT_LINES);
+    const maxVal = records[0].count;
+    const displaySet = this.getDisplaySet(records, page, lines);
+
+    emojiName = this.client.emojis.get(emoji).name;
+    let response = '**' + emojiName + (scope === global ? '(Global)' : '') + ':**\n';
+    displaySet.forEach((record, i) => {
+      response += this.generateBar(record.count, maxVal) + ' ';
+      response += this.emojiToString(emoji) + ' ';
+      response += this.userToNickname(message.guild, record.user) + ' ';
+      response += this.generateRank(page, i) + ' ';
+      response += '\n';
+
+      // if response too long
+      if(response.length >= RESPONSE_CUTOFF) {
+        message.channel.send(response);
+        response = '';
+      }
+    });
+    if(select === 'page')
+      response += '\n Page ' + page + ' of ' + Math.ceil(records.length/DEFAULT_LINES) + '.';
+    message.channel.send(response);
+  }
+
+  getDisplaySet(records, page, lines) {
+    const offset = (page - 1) * DEFAULT_LINES;
+
+    const displaySet = [];
+    for(let i = offset; i < offset + lines && i < records.length; i++) {
+      displaySet.push(records[i]);
+    }
+    if(displaySet.length < 1) {
+      this.notFound(message);
+      return;
+    }
+    return displaySet;
+  }
+
+  getRecordsForUsers(message, users) {
+    switch (users) {
+      case 'me':
+        return recordService.getRecordsForUser(message.author.id);
+      case 'my':
+        return recordService.getRecordsForUser(message.author.id);
+      case 'server':
+        return recordService.getRecordsForUsers(this.getGuildMemberIds(message.guild));
+      case 'all':
+        return recordService.getRecordsForAllUsers();
+      default:
+        return recordService.getRecordsForUser(users);
+    }
   }
 
   getRecordsForEmoji(emoji) {
     return recordService.getRecordsForEmoji(emoji);
   }
 
-  getUsers(guild) {
-    const users = [];
+  getGuildMemberIds(guild) {
+    const userIds = [];
     guild.members.forEach((member) => {
       if(!member.user.bot) {
-        users.push(member.user.id);
+        userIds.push(member.user.id);
       }
     });
-    return users;
+    return userIds;
   }
 
-  getEmoji() {
+  getClientEmoji() {
     const emojiList = [];
     this.client.emojis.forEach((emoji) => emojiList.push(emoji.id));
     return emojiList;
   }
 
-  getEmojiForGuild(guild) {
+  getGuildEmoji(guild) {
     const emojiList = [];
     guild.emojis.forEach((emoji) => emojiList.push(emoji.id));
     return emojiList;
@@ -143,185 +364,8 @@ class Nanami {
     return rank;
   }
 
-  // COMMANDS
-  help(message) {
-    message.channel.send(helpMessage);
-  }
-
-  say(message, text) {
-    message.delete();
-    let newText = '**' + this.userToNickname(message.guild, message.author.id) + ':**';
-    message.channel.send(newText);
-    newText = '';
-    const toks = text.split(/(\s+)/);
-    const emoji = [];
-    toks.forEach((token) => {
-      const emojiId = this.getEmojiFromName(token);
-      if(emojiId) {
-        emoji.push(emojiId);
-        newText += this.emojiToString(emojiId);
-      } else if (token == '\n'){
-        console.log(newText);
-        if(newText.length > 0)
-          message.channel.send(newText);
-        newText = '';
-      } else {
-        newText += token;
-      }
-    });
-    if(newText.length > 0)
-      message.channel.send(newText);
-
-    this.recordEmoji(message.author.id, emoji);
-  }
-
-  async viewEmoji(message, emoji, emojiName, display = 'page', count = 1, scope = 'local') {
-    if(!emoji) {
-      emoji = this.getEmojiFromName(emojiName);
-    }
-
-    if(!emoji) {
-      this.notFound();
-    }
-
-    let records = await this.getRecordsForEmoji(emoji);
-
-    if(scope === 'local') {
-      const validUsers = this.getUsers(message.guild);
-      records = records.filter((record) => validUsers.includes(record.user));
-    }
-
-    let page = 1;
-    let lines = DEFAULT_LINES;
-
-    if(display === 'top') {
-      lines = count;
-    }
-
-    if(display === 'page') {
-      page = count;
-    }
-
-    // generate set to display
-    const offset = (page - 1) * DEFAULT_LINES;
-    const displaySet = [];
-
-    for(let i = offset; i < offset + lines && i < records.length; i++) {
-      displaySet.push(records[i]);
-    }
-
-    // check for results that meet the criteria
-    if(displaySet.length < 1) {
-      this.notFound(message);
-      return;
-    }
-
-    // get Max Value
-    const maxVal = records[0].count;
-
-    // generate response
-    emojiName = this.client.emojis.get(emoji).name;
-    let response = '**' + emojiName + ':**\n';
-    displaySet.forEach((record, i) => {
-      response += this.generateBar(record.count, maxVal) + ' ';
-      response += this.emojiToString(emoji) + ' ';
-      response += this.userToNickname(message.guild, record.user) + ' ';
-      response += this.generateRank(page, i) + ' ';
-      response += '\n';
-
-      // if response too long
-      if(response.length >= RESPONSE_CUTOFF) {
-        message.channel.send(response);
-        response = '';
-      }
-    });
-
-    if(display === 'page') {
-      response += '\n Page ' + page + ' of ' + Math.ceil(records.length/DEFAULT_LINES) + '.';
-    }
-
-    message.channel.send(response);
-  }
-
-  async viewUser(message, users, display = 'page', count = 1, scope = 'local') {
-    let records = await this.getRecordsForUsers(message, users);
-
-    let validEmoji;
-    if(scope === 'global')
-      validEmoji = this.getEmoji();
-    if(scope === 'local')
-      validEmoji = this.getEmojiForGuild(message.guild);
-
-    // filter by scope
-    records = records.filter((record) => validEmoji.includes(record.emoji));
-
-    let page = 1;
-    let lines = DEFAULT_LINES;
-
-    if(display === 'top') {
-      lines = count;
-    }
-
-    if(display === 'page') {
-      page = count;
-    }
-
-    // generate set to display
-    const offset = (page - 1) * DEFAULT_LINES;
-    const displaySet = [];
-
-    for(let i = offset; i < offset + lines && i < records.length; i++) {
-      displaySet.push(records[i]);
-    }
-
-    // check for results that meet the criteria
-    if(displaySet.length < 1) {
-      this.notFound(message);
-      return;
-    }
-
-    // get Max Value
-    const maxVal = records[0].count;
-
-    // generate response
-    let username;
-    if(users === 'me' || users === 'my') {
-      username = this.userToNickname(message.guild, message.author.id);
-    } else if (users === 'server') {
-      username = 'Server';
-    } else if (users === 'all') {
-      username = 'All';
-    } else {
-      username = this.userToNickname(message.guild, users);
-    }
-
-    let response = '**' + username + ':**\n';
-    displaySet.forEach((record, i) => {
-      response += this.generateBar(record.count, maxVal) + ' ';
-      response += this.emojiToString(record.emoji) + ' ';
-      response += this.generateRank(page, i) + ' ';
-      response += '\n';
-
-      // if response too long
-      if(response.length >= RESPONSE_CUTOFF) {
-        message.channel.send(response);
-        response = '';
-      }
-    });
-
-    if(display === 'page') {
-      response += '\n Page ' + page + ' of ' + Math.ceil(records.length/DEFAULT_LINES) + '.';
-    }
-
-    message.channel.send(response);
-  }
-
   notFound(message) {
     message.channel.send("Nothing to display.");
-  }
-
-  invalid(message) {
-    message.channel.send("I don't know how to do that.");
   }
 }
 
