@@ -25,7 +25,8 @@ class Nanami {
   }
 
   setStatus() {
-    this.client.user.setStatus(`Live in ${this.client.guilds.size} servers!`);
+    this.client.user.setActivity(`in ${this.client.guilds.size} servers!`);
+    console.log(this.client.guilds);
   }
 
   read(message) {

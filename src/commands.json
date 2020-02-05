@@ -56,7 +56,7 @@
   {
     "command": "say",
     "description": "Nanami sends a message on your behalf, replacing emoji names with emojis.",
-    "aliases": ["say"],
+    "aliases": ["say", "msg", "use"],
     "usage": "n.say <text>",
     "notes": "",
     "parameters": []
