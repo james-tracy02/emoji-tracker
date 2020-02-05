@@ -28,7 +28,7 @@ class Nanami {
     this.client.user.setActivity(`in ${this.client.guilds.size} servers!`);
   }
 
-  recordReaction(user, reaction) {
+  recordReaction(reaction, user) {
     this.recordEmoji(user.id, [reaction.emoji.id]);
   }
 

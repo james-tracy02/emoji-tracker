@@ -17,7 +17,9 @@ client.on('guildCreate', guild => {
   nanami.setStatus();
 });
 
-client.on('messageReactionAdd', async)
+client.on('messageReactionAdd', (reaction, user) => {
+  nanami.recordReaction(reaction, user);
+})
 
 client.on('message', message => {
   if(message.author.bot)
