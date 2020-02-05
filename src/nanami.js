@@ -43,7 +43,6 @@ class Nanami {
   }
 
   execute(message, command) {
-            console.log(command);
     switch (command.type) {
       case 'none':
         this.none();
@@ -252,7 +251,7 @@ class Nanami {
     const maxVal = records[0].count;
     const displaySet = this.getDisplaySet(records, page, lines);
 
-    emojiName = this.client.emojis.get(emoji).name;
+    const emojiName = this.client.emojis.get(emoji).name;
     let response = '**' + emojiName + (scope === global ? '(Global)' : '') + ':**\n';
     displaySet.forEach((record, i) => {
       response += this.generateBar(record.count, maxVal) + ' ';
