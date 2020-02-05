@@ -26,7 +26,6 @@ class Nanami {
 
   setStatus() {
     this.client.user.setActivity(`in ${this.client.guilds.size} servers!`);
-    console.log(this.client.guilds);
   }
 
   read(message) {
@@ -140,7 +139,9 @@ class Nanami {
   }
 
   info(message, name) {
-    const command = commands.find((command) => command.command === name);
+    const command = commands.find((command) => command.command === name || command.aliases.includes(name));
+    if(!command)
+      return;
     let cmdMsg = '**Command:** ' + command.command + '\n'
     + '\t**Description:** *' + command.description + '*\n'
     + '\t**Aliases:** ';
