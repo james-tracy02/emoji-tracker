@@ -13,11 +13,13 @@ client.on('ready', () => {
   nanami.ready();
 });
 
-client.on('guildCreate', async guild => {
+client.on('guildCreate', guild => {
   nanami.setStatus();
 });
 
-client.on('message', async message => {
+client.on('messageReactionAdd', async)
+
+client.on('message', message => {
   if(message.author.bot)
     return;
   nanami.read(message);

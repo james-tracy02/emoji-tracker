@@ -28,6 +28,10 @@ class Nanami {
     this.client.user.setActivity(`in ${this.client.guilds.size} servers!`);
   }
 
+  recordReaction(user, reaction) {
+    this.recordEmoji(user.id, [reaction.emoji.id]);
+  }
+
   read(message) {
     // If the message is not a command, handle it normally
     if(!message.content.startsWith(PREFIX))
