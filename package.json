@@ -18,8 +18,8 @@
   },
   "scripts": {
     "start": "node src/client.js",
-    "test": "npx mocha test",
-    "lint": "npx eslint src"
+    "test": "mocha test",
+    "lint": "eslint src"
   },
   "author": "James Tracy",
   "license": "ISC"
