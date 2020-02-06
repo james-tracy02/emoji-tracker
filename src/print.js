@@ -2,8 +2,8 @@
 const commands = require('./commands.json');
 
 function printHelp() {
-  let helpMsg = '**Emoji Tracker** ***Nanami Bot***\n\n'
-  helpMsg += '**Commands:**\n'
+  let helpMsg = '**Emoji Tracker** ***Nanami Bot***\n\n';
+  helpMsg += '**Commands:**\n';
   helpMsg += '*Say* `n.info <command>` *to find out more!*\n\n';
   commands.forEach((command) => {
     helpMsg += `\`${command.command}\` - ${command.description}\n`;
@@ -15,9 +15,9 @@ function printCommand(name) {
   const command = commands.find((template) => template.command === name
                                            || template.aliases.includes(name));
   if (!command) return '';
-  let cmdMsg = `**Command:** ${command.command}\n`
-  cmdMsg += `\t**Description:** *${command.description}*\n`
-  cmdMsg += `\t**Aliases:** `;
+  let cmdMsg = `**Command:** ${command.command}\n`;
+  cmdMsg += `\t**Description:** *${command.description}*\n`;
+  cmdMsg += '\t**Aliases:** ';
 
   command.aliases.forEach((alias) => {
     cmdMsg += `\`${alias}\` `;
@@ -26,7 +26,7 @@ function printCommand(name) {
   if (command.parameters.length !== 0) {
     cmdMsg += '\t**Parameters:**\n';
     command.parameters.forEach((parameter) => {
-      cmdMsg += `\t\t**${parameter.name}** [${parameter.type.type}]:`
+      cmdMsg += `\t\t**${parameter.name}** [${parameter.type.type}]:`;
       cmdMsg += `*${parameter.description}*`;
       if (parameter.optional) cmdMsg += ' (Optional)';
       cmdMsg += '\n';
