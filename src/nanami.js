@@ -188,7 +188,7 @@ class Nanami {
     }
 
     let response = `**${username}${scope === global ? '(Global)' : ''}:**\n`;
-    response += `*Total: ${records.length}*`;
+    response += `*Total: ${records.length}*\n`;
     displaySet.forEach((record, i) => {
       response += `${Print.bar(record.count, maxVal, DEFAULT_WIDTH)} `;
       response += `${this.emojiToString(record.emoji)} `;
@@ -223,7 +223,7 @@ class Nanami {
 
     const emojiName = this.client.emojis.get(emoji).name;
     let response = `**${emojiName}${scope === global ? '(Global)' : ''}:**\n`;
-    response += `*Total: ${records.length}*`;
+    response += `*Total: ${records.length}*\n`;
     displaySet.forEach((record, i) => {
       response += `${Print.bar(record.count, maxVal, DEFAULT_WIDTH)} `;
       response += `${this.emojiToString(emoji)} `;
