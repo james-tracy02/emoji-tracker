@@ -2,32 +2,32 @@
 const commands = require('./commands.json');
 
 function printHelp() {
-  let helpMessage = `**Emoji Tracker** ***Nanami Bot***\n\n
-   **Commands:**\n
-   *Say* \`n.info <command>\` *to find out more!*\n\n`;
+  let helpMsg = '**Emoji Tracker** ***Nanami Bot***\n\n'
+  helpMsg += '**Commands:**\n'
+  helpMsg += '*Say* `n.info <command>` *to find out more!*\n\n';
   commands.forEach((command) => {
-    helpMessage += `\`${command.command}\` - \`${command.description}\n`;
+    helpMsg += `\`${command.command}\` - ${command.description}\n`;
   });
-  return helpMessage;
+  return helpMsg;
 }
 
 function printCommand(name) {
   const command = commands.find((template) => template.command === name
                                            || template.aliases.includes(name));
   if (!command) return '';
-  let cmdMsg = `**Command:** ${command.command}\n
-   \t**Description:** *${command.description}*\n
-   \t**Aliases:** `;
+  let cmdMsg = `**Command:** ${command.command}\n`
+  cmdMsg += `\t**Description:** *${command.description}*\n`
+  cmdMsg += `\t**Aliases:** `;
 
   command.aliases.forEach((alias) => {
-    cmdMsg += `\`${alias} `;
+    cmdMsg += `\`${alias}\` `;
   });
   cmdMsg += `\n\t**Usage:** \`${command.usage}\`\n`;
   if (command.parameters.length !== 0) {
     cmdMsg += '\t**Parameters:**\n';
     command.parameters.forEach((parameter) => {
-      cmdMsg += `\t\t**${parameter.name}** [${parameter.type.type}]:
-                 *${parameter.description}*`;
+      cmdMsg += `\t\t**${parameter.name}** [${parameter.type.type}]:`
+      cmdMsg += `*${parameter.description}*`;
       if (parameter.optional) cmdMsg += ' (Optional)';
       cmdMsg += '\n';
     });
