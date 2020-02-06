@@ -71,6 +71,9 @@ class Nanami {
       case 'invalid':
         this.invalid(message, command.command);
         break;
+      case 'points':
+        this.points(message, command.user);
+        break;
       default:
         break;
     }
@@ -125,6 +128,14 @@ class Nanami {
 
   notFound(message) {
     message.channel.send('Nothing to display.');
+  }
+
+  async points(message, user) {
+    let userId = this.matchUser(user);
+    if (user === 'me') userId = message.author.id;
+    const points = await pointService.getPointsForUser(userId);
+    const username = this.userToNickname(message.guild, userId);
+    message.channel.send(`**${username}** has ${points} nanami points!`);
   }
 
   matchUser(target) {

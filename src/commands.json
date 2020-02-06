@@ -77,5 +77,23 @@
         "optional": false
       }
     ]
+  },
+  {
+    "command": "points",
+    "description": "View a user's nanami points.",
+    "aliases": ["points"],
+    "usage": "n.points <user>",
+    "notes": "",
+    "parameters": [
+      {
+        "name": "user",
+        "type": {
+          "type": "String"
+        },
+        "description": "The user to lookup. Defaults to you if left blank.",
+        "optional": true,
+        "default": "me"
+      }
+    ]
   }
 ]

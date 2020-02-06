@@ -15,7 +15,13 @@ async function awardPoints(user, award) {
   points.save();
 }
 
+async function getPointsForUser(user) {
+  const points = await Point.findOne({ user });
+  if (points) return points.points;
+  return 0;
+}
 
 module.exports = {
   awardPoints,
+  getPointsForUser,
 };
