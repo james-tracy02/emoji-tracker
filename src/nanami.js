@@ -115,7 +115,7 @@ class Nanami {
     });
     if (newText.length > 0) message.channel.send(newText);
 
-    this.recordEmoji(message.author.id, emoji);
+    recordService.recordEmoji(message.author.id, emoji);
   }
 
   info(message, name) {
