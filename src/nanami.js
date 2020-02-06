@@ -188,7 +188,7 @@ class Nanami {
     }
 
     let response = `**${username}${scope === global ? '(Global)' : ''}:**\n`;
-    response += `*Total: ${records.length}*\n`;
+    response += `*Total: ${this.total(records)}*\n`;
     displaySet.forEach((record, i) => {
       response += `${Print.bar(record.count, maxVal, DEFAULT_WIDTH)} `;
       response += `${this.emojiToString(record.emoji)} `;
@@ -223,7 +223,7 @@ class Nanami {
 
     const emojiName = this.client.emojis.get(emoji).name;
     let response = `**${emojiName}${scope === global ? '(Global)' : ''}:**\n`;
-    response += `*Total: ${records.length}*\n`;
+    response += `*Total: ${this.total(records)}*\n`;
     displaySet.forEach((record, i) => {
       response += `${Print.bar(record.count, maxVal, DEFAULT_WIDTH)} `;
       response += `${this.emojiToString(emoji)} `;
@@ -239,6 +239,14 @@ class Nanami {
     });
     if (select === 'page') response += `\n Page ${page} of ${Math.ceil(records.length / DEFAULT_LINES)}.`;
     message.channel.send(response);
+  }
+
+  total(records) {
+    let total = 0;
+    records.forEach((record) => {
+      total += record.count;
+    });
+    return total;
   }
 
   getDisplaySet(message, records, page, lines) {
