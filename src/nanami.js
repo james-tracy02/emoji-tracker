@@ -7,7 +7,7 @@ const pointService = require('./pointService.js');
 const DEFAULT_LINES = 20;
 const DEFAULT_WIDTH = 80;
 const RESPONSE_CUTOFF = 1800;
-const POINT_FREQ = 0.05;
+const POINT_FREQ = 0.0825;
 const POINT_MIN = 1;
 const POINT_MAX = 200;
 const PREFIX = 'n.';
@@ -34,20 +34,20 @@ class Nanami {
   read(message) {
     // If the message is not a command, handle it normally
     if (!message.content.startsWith(PREFIX)) {
-      this.handleMessage(message);
+      this.handleMessage(message.author.id, message);
     } else { // Otherwise parse the command and execute
       this.execute(message, Parse.command(message.content.substring(PREFIX.length)));
     }
   }
 
-  handleMessage(message) {
+  handleMessage(authorId, message) {
     const emoji = Parse.emoji(message.content);
-    recordService.recordEmoji(message.author.id, emoji);
+    recordService.recordEmoji(authorId, emoji);
     if (emoji.length > 0 && Math.random() < POINT_FREQ) {
       const points = Math.floor(Math.random() * (POINT_MAX - POINT_MIN) + POINT_MIN);
-      pointService.awardPoints(message.author.id, points);
-      message.channel.send(`${`Nice ${message.author.toString()}!\n`
-      + 'You found '}${points} nanami points! I wonder what they do...`);
+      pointService.awardPoints(authorId, points);
+      message.channel.send(`Nice **${this.userToNickname(message.guild, authorId)}**!\n`
+      + `You found **${points}** nanami points! I wonder what they do...`);
     }
   }
 
