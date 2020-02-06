@@ -43,11 +43,11 @@ class Nanami {
   handleMessage(message) {
     const emoji = Parse.emoji(message.content);
     recordService.recordEmoji(message.author.id, emoji);
-    if (Math.random() < POINT_FREQ) {
+    if (emoji.length > 0 && Math.random() < POINT_FREQ) {
       const points = Math.floor(Math.random() * (POINT_MAX - POINT_MIN) + POINT_MIN);
       pointService.awardPoints(message.author.id, points);
-      message.channel.send(`Nice ${message.author.toString()}}!
-      You found ${points} nanami points! I wonder what they do...`);
+      message.channel.send('Nice ${message.author.toString()}!\n'
+      + 'You found ${points} nanami points! I wonder what they do...'');
     }
   }
 
