@@ -28,7 +28,7 @@ class Nanami {
   }
 
   recordReaction(reaction, user) {
-    this.recordEmoji(user.id, [reaction.emoji.id]);
+    recordService.recordEmoji(user.id, [reaction.emoji.id]);
   }
 
   read(message) {
