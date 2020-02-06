@@ -2,10 +2,14 @@
 const Parse = require('./parse.js');
 const Print = require('./print.js');
 const recordService = require('./service.js');
+const pointService = require('./pointService.js');
 
 const DEFAULT_LINES = 20;
 const DEFAULT_WIDTH = 80;
 const RESPONSE_CUTOFF = 1800;
+const POINT_FREQ = 0.02;
+const POINT_MIN = 1;
+const POINT_MAX = 200;
 const PREFIX = 'n.';
 const USERID_REGEXP = /<@!?(\d*)>/;
 const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
@@ -30,9 +34,20 @@ class Nanami {
   read(message) {
     // If the message is not a command, handle it normally
     if (!message.content.startsWith(PREFIX)) {
-      recordService.recordEmoji(message.author.id, Parse.emoji(message.content));
+      this.handleMessage(message);
     } else { // Otherwise parse the command and execute
       this.execute(message, Parse.command(message.content.substring(PREFIX.length)));
+    }
+  }
+
+  handleMessage(message) {
+    const emoji = Parse.emoji(message.content);
+    recordService.recordEmoji(message.author.id, emoji);
+    if (Math.random() < (POINT_FREQ * emoji.length)) {
+      const points = Math.floor(Math.random() * (POINT_MAX - POINT_MIN) + POINT_MIN);
+      pointService.awardPoints(message.author.id, points);
+      message.channel.send(`Nice ${message.author.toString()}}!
+      You found ${points} nanami points! I wonder what they do...`);
     }
   }
 
@@ -162,6 +177,7 @@ class Nanami {
     }
 
     let response = `**${username}${scope === global ? '(Global)' : ''}:**\n`;
+    response += `*Total: ${records.length}*`;
     displaySet.forEach((record, i) => {
       response += `${Print.bar(record.count, maxVal, DEFAULT_WIDTH)} `;
       response += `${this.emojiToString(record.emoji)} `;
@@ -196,6 +212,7 @@ class Nanami {
 
     const emojiName = this.client.emojis.get(emoji).name;
     let response = `**${emojiName}${scope === global ? '(Global)' : ''}:**\n`;
+    response += `*Total: ${records.length}*`;
     displaySet.forEach((record, i) => {
       response += `${Print.bar(record.count, maxVal, DEFAULT_WIDTH)} `;
       response += `${this.emojiToString(emoji)} `;
