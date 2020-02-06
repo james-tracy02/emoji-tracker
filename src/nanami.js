@@ -54,7 +54,7 @@ class Nanami {
         this.info(message, command.command);
         break;
       case 'invalid':
-        this.invalid(message, command.type);
+        this.invalid(message, command.command);
         break;
       default:
         break;
