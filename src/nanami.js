@@ -7,7 +7,7 @@ const pointService = require('./pointService.js');
 const DEFAULT_LINES = 20;
 const DEFAULT_WIDTH = 80;
 const RESPONSE_CUTOFF = 1800;
-const POINT_FREQ = 0.1;
+const POINT_FREQ = 0.05;
 const POINT_MIN = 1;
 const POINT_MAX = 200;
 const PREFIX = 'n.';
@@ -46,8 +46,8 @@ class Nanami {
     if (emoji.length > 0 && Math.random() < POINT_FREQ) {
       const points = Math.floor(Math.random() * (POINT_MAX - POINT_MIN) + POINT_MIN);
       pointService.awardPoints(message.author.id, points);
-      message.channel.send('Nice ${message.author.toString()}!\n'
-      + 'You found ${points} nanami points! I wonder what they do...'');
+      message.channel.send(`${`Nice ${message.author.toString()}!\n`
+      + 'You found '}${points} nanami points! I wonder what they do...`);
     }
   }
 
