@@ -1,13 +1,13 @@
-'use strict';
 
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+
+const { Schema } = mongoose;
 
 
 const recordSchema = new Schema({
   user: String,
   emoji: String,
-  count: Number
+  count: Number,
 });
 
 const Record = mongoose.model('Record', recordSchema);
