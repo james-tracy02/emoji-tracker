@@ -1,3 +1,10 @@
 language: node_js
 node_js:
  - "node"
+jobs:
+  include:
+    - stage: lint
+      script: eslint src
+    - stage: test
+      script: mocha test
+cache: npm

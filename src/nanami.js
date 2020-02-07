@@ -43,7 +43,7 @@ class Nanami {
   handleMessage(authorId, message) {
     const emoji = Parse.emoji(message.content);
     recordService.recordEmoji(authorId, emoji);
-    if(emoji.length > 0) this.rollPoints(authorId, message);
+    if (emoji.length > 0) this.rollPoints(authorId, message);
   }
 
   rollPoints(authorId, message) {
