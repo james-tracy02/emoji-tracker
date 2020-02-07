@@ -7,7 +7,7 @@ const pointService = require('./pointService.js');
 const DEFAULT_LINES = 20;
 const DEFAULT_WIDTH = 80;
 const RESPONSE_CUTOFF = 1800;
-const POINT_FREQ = 0.0825;
+const POINT_FREQ = 0.04;
 const POINT_MIN = 1;
 const POINT_MAX = 200;
 const PREFIX = 'n.';
@@ -43,11 +43,15 @@ class Nanami {
   handleMessage(authorId, message) {
     const emoji = Parse.emoji(message.content);
     recordService.recordEmoji(authorId, emoji);
-    if (emoji.length > 0 && Math.random() < POINT_FREQ) {
+    if(emoji.length > 0) this.rollPoints(authorId, message);
+  }
+
+  rollPoints(authorId, message) {
+    if (Math.random() < POINT_FREQ) {
       const points = Math.floor(Math.random() * (POINT_MAX - POINT_MIN) + POINT_MIN);
       pointService.awardPoints(authorId, points);
       message.channel.send(`Nice **${this.userToNickname(message.guild, authorId)}**!\n`
-      + `You found **${points}** nanami points! I wonder what they do...`);
+      + `You found **${points}** nanami points!`);
     }
   }
 
@@ -116,6 +120,7 @@ class Nanami {
     if (newText.length > 0) message.channel.send(newText);
 
     recordService.recordEmoji(message.author.id, emoji);
+    this.rollPoints(message.author.id, message);
   }
 
   info(message, name) {
