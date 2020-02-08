@@ -185,12 +185,13 @@ class Nanami {
 
     const page = ((select === 'page') ? index : 1);
     const lines = ((select === 'top') ? index : DEFAULT_LINES);
-    const maxVal = records[0].count;
+
     const displaySet = this.getDisplaySet(message, records, page, lines);
     if (displaySet.length < 1) {
       this.notFound(message);
       return;
     }
+    const maxVal = records[0].count;
 
     let response = `**${username}${scope === global ? '(Global)' : ''}:**\n`;
     response += `*Total: ${this.total(records)}*\n`;
@@ -219,12 +220,13 @@ class Nanami {
     }
     const page = ((select === 'page') ? index : 1);
     const lines = ((select === 'top') ? index : DEFAULT_LINES);
-    const maxVal = records[0].count;
+
     const displaySet = this.getDisplaySet(message, records, page, lines);
     if (displaySet.length < 1) {
       this.notFound(message);
       return;
     }
+    const maxVal = records[0].count;
 
     const emojiName = this.client.emojis.get(emoji).name;
     let response = `**${emojiName}${scope === global ? '(Global)' : ''}:**\n`;
