@@ -84,6 +84,9 @@ class Nanami {
       case 'big':
         this.big(message, command.emoji);
         break;
+      case 'random':
+        this.random(message);
+        break;
       default:
         break;
     }
@@ -181,6 +184,17 @@ class Nanami {
     bigEmbed.setImage(url);
     message.channel.send(bigEmbed);
     recordService.recordEmoji(message.author.id, [match]);
+  }
+
+  random(message) {
+    const emoji = this.getRandomEmoji();
+    this.big(message, emoji);
+  }
+
+  getRandomEmoji() {
+    const keys = Array.from(this.client.emojis.keys());
+    const emojiId = keys[Math.floor(Math.random() * keys.length)];
+    return this.client.emojis.get(emojiId).toString();
   }
 
   getUserEmbed(message) {

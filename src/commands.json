@@ -112,5 +112,13 @@
         "optional": false
       }
     ]
+  },
+  {
+    "command": "random",
+    "description": "Use a random emoji.",
+    "aliases": ["random", "rand"],
+    "usage": "n.random",
+    "notes": "",
+    "parameters": []
   }
 ]
