@@ -183,6 +183,7 @@ class Nanami {
     const bigEmbed = this.getUserEmbed(message);
     bigEmbed.setImage(url);
     message.channel.send(bigEmbed);
+    this.rollPoints(message.author.id, message);
     recordService.recordEmoji(message.author.id, [match]);
   }
 
