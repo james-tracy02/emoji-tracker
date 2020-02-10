@@ -1,5 +1,5 @@
 # Emoji Tracker
-> Emoji Tracker gives users new ways to interact with and use emojis.
+> Gives users new ways to interact with and use emojis.
 
 [![Build Status](https://travis-ci.org/james-tracy02/emoji-tracker.svg?branch=master)](https://travis-ci.org/james-tracy02/emoji-tracker)
 ## Invite this bot
