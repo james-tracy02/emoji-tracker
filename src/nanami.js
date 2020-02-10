@@ -180,6 +180,7 @@ class Nanami {
     const bigEmbed = this.getUserEmbed(message);
     bigEmbed.setImage(url);
     message.channel.send(bigEmbed);
+    recordService.recordEmoji(message.author.id, [match]);
   }
 
   getUserEmbed(message) {
