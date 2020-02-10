@@ -81,6 +81,9 @@ class Nanami {
       case 'points':
         this.points(message, command.user);
         break;
+      case 'big':
+        this.big(message, command.emoji);
+        break;
       default:
         break;
     }
@@ -115,11 +118,7 @@ class Nanami {
   async say(message, text) {
     message.delete();
 
-    const { member } = message;
-    const color = member.displayHexColor;
-    const userEmbed = new Discord.RichEmbed()
-      .setColor(color === '#000000' ? '#FEFEFE' : color)
-      .setAuthor(member.displayName, member.user.avatarURL);
+    const userEmbed = this.getUserEmbed(message);
     await message.channel.send(userEmbed);
 
     let newText = '';
@@ -170,6 +169,25 @@ class Nanami {
     const points = await pointService.getPointsForUser(userId);
     const username = this.userToNickname(message.guild, userId);
     message.channel.send(`**${username}** has ${points} nanami points!`);
+  }
+
+  big(message, emoji) {
+    message.delete();
+
+    const match = this.matchEmoji(emoji);
+    if (!match) message.channel.send('Invalid emoji.');
+    const { url } = this.client.emojis.get(match);
+    const bigEmbed = this.getUserEmbed(message);
+    bigEmbed.setImage(url);
+    message.channel.send(bigEmbed);
+  }
+
+  getUserEmbed(message) {
+    const { member } = message;
+    const color = member.displayHexColor;
+    return new Discord.RichEmbed()
+      .setColor(color === '#000000' ? '#FEFEFE' : color)
+      .setAuthor(member.displayName, member.user.avatarURL);
   }
 
   matchUser(target) {

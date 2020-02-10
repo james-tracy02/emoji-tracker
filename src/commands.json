@@ -95,5 +95,22 @@
         "default": "me"
       }
     ]
+  },
+  {
+    "command": "big",
+    "description": "Make an emoji big.",
+    "aliases": ["big", "beeg"],
+    "usage": "n.big <emoji>",
+    "notes": "",
+    "parameters": [
+      {
+        "name": "emoji",
+        "type": {
+          "type": "String"
+        },
+        "description": "The emoji to make big.",
+        "optional": false
+      }
+    ]
   }
 ]
