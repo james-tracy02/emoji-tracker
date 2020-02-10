@@ -1,21 +1,19 @@
 
 const commands = require('./commands.json');
 
-function printHelp() {
-  let helpMsg = '**Emoji Tracker** ***Nanami Bot***\n\n';
-  helpMsg += '**Commands:**\n';
-  helpMsg += '*Say* `n.info <command>` *to find out more!*\n\n';
+function printCommands() {
+  let commandsMsg = '';
   commands.forEach((command) => {
-    helpMsg += `\`${command.command}\` - ${command.description}\n`;
+    commandsMsg += `\`${command.command}\` - ${command.description}\n`;
   });
-  return helpMsg;
+  return commandsMsg;
 }
 
 function printCommand(name) {
   const command = commands.find((template) => template.command === name
                                            || template.aliases.includes(name));
   if (!command) return '';
-  let cmdMsg = `**Command:** ${command.command}\n`;
+  let cmdMsg = '';
   cmdMsg += `\t**Description:** *${command.description}*\n`;
   cmdMsg += '\t**Aliases:** ';
 
@@ -26,7 +24,7 @@ function printCommand(name) {
   if (command.parameters.length !== 0) {
     cmdMsg += '\t**Parameters:**\n';
     command.parameters.forEach((parameter) => {
-      cmdMsg += `\t\t**${parameter.name}** [${parameter.type.type}]:`;
+      cmdMsg += `\t\t\u2022 **${parameter.name}**:`;
       cmdMsg += `*${parameter.description}*`;
       if (parameter.optional) cmdMsg += ' (Optional)';
       cmdMsg += '\n';
@@ -57,8 +55,8 @@ function printRank(page, index) {
 }
 
 module.exports = {
-  help: printHelp,
   command: printCommand,
   bar: printBar,
   rank: printRank,
+  commands: printCommands,
 };

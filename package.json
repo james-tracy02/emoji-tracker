@@ -1,8 +1,12 @@
 {
-  "name": "emojitracker",
-  "version": "1.0.0",
-  "description": "discord bot for tracking emoji usage on your server",
-  "main": "bot.js",
+  "name": "emoji-tracker",
+  "repository": "https://github.com/james-tracy02/emoji-tracker.git",
+  "description": "A Discord bot for tracking emoji usage on your server.",
+  "main": "client.js",
+  "scripts": {
+    "start": "nodemon client.js",
+    "test": "eslint src && mocha test"
+  },
   "dependencies": {
     "discord.js": "^11.5.1",
     "dotenv": "^8.1.0",
@@ -15,11 +19,6 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.1",
     "nodemon": "^1.19.2"
-  },
-  "scripts": {
-    "start": "nodemon src/client.js",
-    "test": "mocha test",
-    "lint": "eslint src"
   },
   "author": "James Tracy",
   "license": "ISC"

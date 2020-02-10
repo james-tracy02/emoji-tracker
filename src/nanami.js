@@ -1,4 +1,5 @@
 
+const Discord = require('discord.js');
 const Parse = require('./parse.js');
 const Print = require('./print.js');
 const recordService = require('./service.js');
@@ -13,6 +14,8 @@ const POINT_MAX = 200;
 const PREFIX = 'n.';
 const USERID_REGEXP = /<@!?(\d*)>/;
 const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
+
+const COLOR = '#EBC8CB';
 
 class Nanami {
   constructor(client) {
@@ -87,7 +90,18 @@ class Nanami {
   none() {}
 
   help(message) {
-    message.channel.send(Print.help());
+    const helpEmbed = new Discord.RichEmbed()
+      .setColor(COLOR)
+      .setTitle('Nanami Bot | Prefix .n')
+      .setAuthor('Emoji Tracker', this.client.user.avatarURL)
+      .setDescription(`${'I give you new ways to interact with and use emojis.\n\n'
+      + '**Commands**\n'
+      + '*Say* `n.info <command>` *to find out more!*\n\n'}${
+        Print.commands()}`)
+      .setFooter('Made by Fyre_Fli#4138',
+        'https://cdn.discordapp.com/avatars/265902301443653644/993314979e5e569cd368a71d1881a34d.png');
+
+    message.channel.send(helpEmbed);
   }
 
   view(message, target, select, index, scope) {
@@ -98,10 +112,16 @@ class Nanami {
     return this.invalid(message, 'view');
   }
 
-  say(message, text) {
+  async say(message, text) {
     message.delete();
-    const username = `**${this.userToNickname(message.guild, message.author.id)}:**`;
-    message.channel.send(username);
+
+    const { member } = message;
+    const color = member.displayHexColor;
+    const userEmbed = new Discord.RichEmbed()
+      .setColor(color === '#000000' ? '#FEFEFE' : color)
+      .setAuthor(member.displayName, member.user.avatarURL);
+    await message.channel.send(userEmbed);
+
     let newText = '';
     const toks = text.split(/(\s+)/);
     const emoji = [];
@@ -120,11 +140,20 @@ class Nanami {
     if (newText.length > 0) message.channel.send(newText);
 
     recordService.recordEmoji(message.author.id, emoji);
-    this.rollPoints(message.author.id, message);
+    if (emoji.length > 0) this.rollPoints(message.author.id, message);
   }
 
   info(message, name) {
-    message.channel.send(Print.command(name));
+    const description = Print.command(name);
+    if (description === '') {
+      message.channel.send('Invalid command name.');
+      return;
+    }
+    const infoEmbed = new Discord.RichEmbed()
+      .setColor(COLOR)
+      .setTitle(name)
+      .setDescription(description);
+    message.channel.send(infoEmbed);
   }
 
   invalid(message) {

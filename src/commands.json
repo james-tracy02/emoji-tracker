@@ -9,7 +9,7 @@
   },
   {
     "command": "view",
-    "description": "Query emoji usage stats on a given target.",
+    "description": "Look up emoji stats on a given target.",
     "aliases": ["view", "display"],
     "usage": "n.view <target> <select> <index> <scope>",
     "notes": "",
@@ -55,7 +55,7 @@
   },
   {
     "command": "say",
-    "description": "Nanami sends a message on your behalf, replacing emoji names with emojis.",
+    "description": "Nanami replaces emoji names with emojis.",
     "aliases": ["say", "msg", "use"],
     "usage": "n.say <text>",
     "notes": "",
@@ -63,7 +63,7 @@
   },
   {
     "command": "info",
-    "description": "View information on a given command.",
+    "description": "Look up information on a given command.",
     "aliases": ["info"],
     "usage": "n.info <command>",
     "notes": "",
@@ -80,7 +80,7 @@
   },
   {
     "command": "points",
-    "description": "View a user's nanami points.",
+    "description": "Look up a user's nanami points.",
     "aliases": ["points"],
     "usage": "n.points <user>",
     "notes": "",

@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const Nanami = require('./nanami.js');
+const Nanami = require('./src/nanami.js');
 
 const nanami = new Nanami(client);
 
