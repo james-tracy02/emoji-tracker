@@ -215,13 +215,13 @@ class Nanami {
   add(message, emoji, name) {
     const emojiObj = this.client.emojis.find((e) => e.name === emoji
     && e.guild.id !== message.guild.id);
-    if(!emojiObj) {
+    if (!emojiObj) {
       message.channel.send('Invalid emoji!');
       return;
     }
-    message.guild.createEmoji(emojiObj.url, name === "" ? emojiObj.name : name);
+    message.guild.createEmoji(emojiObj.url, name === '' ? emojiObj.name : name);
     const addEmbed = this.getUserEmbed(message);
-    addEmbed.setDescription('Added ' + (name === "" ? emojiObj.name : name) + ' to ' + message.guild.name + '.');
+    addEmbed.setDescription(`Added ${name === '' ? emojiObj.name : name} to ${message.guild.name}.`);
     addEmbed.setImage(emojiObj.url);
     message.channel.send(addEmbed);
   }
