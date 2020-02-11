@@ -90,6 +90,9 @@ class Nanami {
       case 'invite':
         this.invite(message);
         break;
+      case 'add':
+        this.add(message, command.emoji, command.name);
+        break;
       default:
         break;
     }
@@ -181,7 +184,10 @@ class Nanami {
     message.delete();
 
     const match = this.matchEmoji(emoji);
-    if (!match) message.channel.send('Invalid emoji.');
+    if (!match) {
+      message.channel.send('Invalid emoji.');
+      return;
+    }
     const { url } = this.client.emojis.get(match);
     const bigEmbed = this.getUserEmbed(message);
     bigEmbed.setImage(url);
@@ -204,6 +210,20 @@ class Nanami {
       .setFooter('Made by Fyre_Fli#4138',
         'https://cdn.discordapp.com/avatars/265902301443653644/993314979e5e569cd368a71d1881a34d.png');
     message.channel.send(inviteEmbed);
+  }
+
+  add(message, emoji, name) {
+    const emojiObj = this.client.emojis.find((e) => e.name === emoji
+    && e.guild.id !== message.guild.id);
+    if(!emojiObj) {
+      message.channel.send('Invalid emoji!');
+      return;
+    }
+    message.guild.createEmoji(emojiObj.url, name === "" ? emojiObj.name : name);
+    const addEmbed = this.getUserEmbed(message);
+    addEmbed.setDescription('Added ' + (name === "" ? emojiObj.name : name) + ' to ' + message.guild.name + '.');
+    addEmbed.setImage(emojiObj.url);
+    message.channel.send(addEmbed);
   }
 
   getRandomEmoji() {
