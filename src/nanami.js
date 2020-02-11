@@ -87,6 +87,9 @@ class Nanami {
       case 'random':
         this.random(message);
         break;
+      case 'invite':
+        this.invite(message);
+        break;
       default:
         break;
     }
@@ -190,6 +193,17 @@ class Nanami {
   random(message) {
     const emoji = this.getRandomEmoji();
     this.big(message, emoji);
+  }
+
+  invite(message) {
+    const inviteEmbed = new Discord.RichEmbed()
+      .setColor(COLOR)
+      .setTitle('Click here to invite me to your server!')
+      .setAuthor('Emoji Tracker', this.client.user.avatarURL)
+      .setURL('https://discordapp.com/oauth2/authorize?client_id=624386401735147531&permissions=1074265152&scope=bot')
+      .setFooter('Made by Fyre_Fli#4138',
+        'https://cdn.discordapp.com/avatars/265902301443653644/993314979e5e569cd368a71d1881a34d.png');
+    message.channel.send(inviteEmbed);
   }
 
   getRandomEmoji() {

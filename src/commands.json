@@ -120,5 +120,13 @@
     "usage": "n.random",
     "notes": "",
     "parameters": []
+  },
+  {
+    "command": "invite",
+    "description": "Generate link to invite bot to your server!",
+    "aliases": ["invite", "inv"],
+    "usage": "n.invite",
+    "notes": "",
+    "parameters": []
   }
 ]
