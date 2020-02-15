@@ -14,6 +14,8 @@ const POINT_MAX = 200;
 const PREFIX = 'n.';
 const USERID_REGEXP = /<@!?(\d*)>/;
 const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
+const NAME_REGEXP = /^:([\w|\d]+):$/;
+const WEBHOOK_NAME = 'Nanami Webhook';
 
 const COLOR = '#EBC8CB';
 
@@ -44,9 +46,51 @@ class Nanami {
   }
 
   handleMessage(authorId, message) {
-    const emoji = Parse.emoji(message.content);
-    recordService.recordEmoji(authorId, emoji);
-    if (emoji.length > 0) this.rollPoints(authorId, message);
+    const replacedMessage = this.replaceNitroEmoji(message);
+    if(replacedMessage) {
+      this.webhookSay(replacedMessage, message);
+    } else {
+      const emoji = Parse.emoji(message.content);
+      recordService.recordEmoji(authorId, emoji);
+      if (emoji.length > 0) this.rollPoints(authorId, message);
+    }
+  }
+
+  replaceNitroEmoji(message) {
+    const toks = message.content.split(/(\s+)/);
+    let newText = '';
+    let count = false;
+    toks.forEach((token) => {
+      const emojiName = token.match(NAME_REGEXP);
+      if(!emojiName) {
+        newText += token;
+      } else {
+        const emojiObj = message.guild.emojis.find((emoji) => emoji.name === emojiName[1]);
+        if(!emojiObj) {
+          newText += token;
+        } else {
+          count = true;
+          newText += emojiObj.toString();
+        }
+      }
+    });
+    if(count) return newText;
+    return null;
+  }
+
+  async webhookSay(content, message) {
+    message.delete();
+    const webhooks = await message.channel.fetchWebhooks();
+    let nanamiWebhook = webhooks.find((webhook) => webhook.name === WEBHOOK_NAME);
+    if(!nanamiWebhook) {
+      nanamiWebhook = await message.channel.createWebhook(WEBHOOK_NAME, this.client.user.avatarURL);
+    }
+    
+    await nanamiWebhook.send(content, {username: message.member.displayName, avatarURL: message.author.avatarURL});
+
+    const emoji = Parse.emoji(content);
+    recordService.recordEmoji(message.author.id, emoji);
+    if (emoji.length > 0) this.rollPoints(message.author.id, message);
   }
 
   rollPoints(authorId, message) {
@@ -180,7 +224,7 @@ class Nanami {
     message.channel.send(`**${username}** has ${points} nanami points!`);
   }
 
-  big(message, emoji) {
+  async big(message, emoji) {
     message.delete();
 
     const match = this.matchEmoji(emoji);
@@ -191,7 +235,7 @@ class Nanami {
     const { url } = this.client.emojis.get(match);
     const bigEmbed = this.getUserEmbed(message);
     bigEmbed.setImage(url);
-    message.channel.send(bigEmbed);
+    await message.channel.send(bigEmbed);
     this.rollPoints(message.author.id, message);
     recordService.recordEmoji(message.author.id, [match]);
   }
@@ -206,7 +250,7 @@ class Nanami {
       .setColor(COLOR)
       .setTitle('Click here to invite me to your server!')
       .setAuthor('Emoji Tracker', this.client.user.avatarURL)
-      .setURL('https://discordapp.com/oauth2/authorize?client_id=624386401735147531&permissions=1074265152&scope=bot')
+      .setURL('https://discordapp.com/oauth2/authorize?client_id=624386401735147531&permissions=604318784&scope=bot')
       .setFooter('Made by Fyre_Fli#4138',
         'https://cdn.discordapp.com/avatars/265902301443653644/993314979e5e569cd368a71d1881a34d.png');
     message.channel.send(inviteEmbed);

@@ -131,7 +131,7 @@
   },
   {
     "command": "add",
-    "description": "Adds an emoji to this discord server",
+    "description": "Adds an emoji to this discord server.",
     "aliases": ["add"],
     "usage": "n.add <emoji>",
     "notes": "",
