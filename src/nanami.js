@@ -47,7 +47,7 @@ class Nanami {
 
   handleMessage(authorId, message) {
     const replacedMessage = this.replaceNitroEmoji(message);
-    if(replacedMessage) {
+    if (replacedMessage) {
       this.webhookSay(replacedMessage, message);
     } else {
       const emoji = Parse.emoji(message.content);
@@ -62,11 +62,11 @@ class Nanami {
     let count = false;
     toks.forEach((token) => {
       const emojiName = token.match(NAME_REGEXP);
-      if(!emojiName) {
+      if (!emojiName) {
         newText += token;
       } else {
         const emojiObj = message.guild.emojis.find((emoji) => emoji.name === emojiName[1]);
-        if(!emojiObj) {
+        if (!emojiObj) {
           newText += token;
         } else {
           count = true;
@@ -74,7 +74,7 @@ class Nanami {
         }
       }
     });
-    if(count) return newText;
+    if (count) return newText;
     return null;
   }
 
@@ -82,11 +82,12 @@ class Nanami {
     message.delete();
     const webhooks = await message.channel.fetchWebhooks();
     let nanamiWebhook = webhooks.find((webhook) => webhook.name === WEBHOOK_NAME);
-    if(!nanamiWebhook) {
+    if (!nanamiWebhook) {
       nanamiWebhook = await message.channel.createWebhook(WEBHOOK_NAME, this.client.user.avatarURL);
     }
-    
-    await nanamiWebhook.send(content, {username: message.member.displayName, avatarURL: message.author.avatarURL});
+
+    await nanamiWebhook.send(content,
+      { username: message.member.displayName, avatarURL: message.author.avatarURL });
 
     const emoji = Parse.emoji(content);
     recordService.recordEmoji(message.author.id, emoji);
