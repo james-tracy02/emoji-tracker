@@ -20,7 +20,8 @@
           "type": "String"
         },
         "description": "The target to query. Can be a user or an emoji.",
-        "optional": false
+        "optional": true,
+        "default": "me"
       },
       {
         "name": "select",

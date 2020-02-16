@@ -20,10 +20,10 @@ describe('Parse', () => {
       { type: 'view', target: 'emoji', select: 'page', index: '1', scope: 'local'});
     });
     it('should not parse when missing required args', () => {
-      assert.deepEqual(Parse.command('view'),
+      assert.deepEqual(Parse.command('info'),
       { type: 'invalid',
         command: {
-          type: 'view',
+          type: 'info',
         }
       });
     });
