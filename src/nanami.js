@@ -243,7 +243,6 @@ class Nanami {
     const bigEmbed = this.getUserEmbed(message);
     bigEmbed.setImage(url);
     await message.channel.send(bigEmbed);
-    this.rollPoints(message.author.id, message);
     recordService.recordEmoji(message.author.id, [match]);
   }
 
@@ -264,7 +263,8 @@ class Nanami {
   }
 
   add(message, emoji, name) {
-    const emojiObj = this.client.emojis.find((e) => e.name === emoji
+    let emojiObj;
+    emojiObj = this.client.emojis.find((e) => e.name === emoji
     && e.guild.id !== message.guild.id);
     if (!emojiObj) {
       message.channel.send('Invalid emoji!');
