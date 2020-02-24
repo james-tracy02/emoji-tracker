@@ -14,8 +14,8 @@ const POINT_MAX = 200;
 const PREFIX = 'n.';
 const USERID_REGEXP = /<@!?(\d*)>/;
 const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
-const NAME_REGEXP = /^:([\w|\d]+):$/;
 const WEBHOOK_NAME = 'Nanami Webhook';
+const NAME_REGEXP = /:([\w|\d]*):(?!\d+)/g;
 
 const COLOR = '#EBC8CB';
 
@@ -29,7 +29,7 @@ class Nanami {
   }
 
   setStatus() {
-    this.client.user.setActivity(`in ${this.client.guilds.size} servers!`);
+    this.client.user.setActivity(`emojis in ${this.client.guilds.size} servers!`, { type: 'WATCHING' });
   }
 
   recordReaction(reaction, user) {
@@ -37,61 +37,50 @@ class Nanami {
   }
 
   read(message) {
-    // If the message is not a command, handle it normally
     if (!message.content.startsWith(PREFIX)) {
       this.handleMessage(message.author.id, message);
-    } else { // Otherwise parse the command and execute
+    } else {
       this.execute(message, Parse.command(message.content.substring(PREFIX.length)));
     }
   }
 
-  handleMessage(authorId, message) {
+  async handleMessage(authorId, message) {
     const replacedMessage = this.replaceNitroEmoji(message);
-    if (replacedMessage) {
-      this.webhookSay(replacedMessage, message);
-    } else {
-      const emoji = Parse.emoji(message.content);
-      recordService.recordEmoji(authorId, emoji);
-      if (emoji.length > 0) this.rollPoints(authorId, message);
-    }
+    if (replacedMessage) this.webhookSay(replacedMessage, message);
+    const emoji = Parse.emoji(replacedMessage || message.content);
+    recordService.recordEmoji(authorId, emoji);
   }
 
   replaceNitroEmoji(message) {
-    const toks = message.content.split(/(\s+)/);
-    let newText = '';
-    let count = false;
-    toks.forEach((token) => {
-      const emojiName = token.match(NAME_REGEXP);
-      if (!emojiName) {
-        newText += token;
-      } else {
-        const emojiObj = message.guild.emojis.find((emoji) => emoji.name === emojiName[1]);
-        if (!emojiObj) {
-          newText += token;
-        } else {
-          count = true;
-          newText += emojiObj.toString();
-        }
+    let newContent = '';
+    let index = 0;
+    const matches = [...message.content.matchAll(NAME_REGEXP)];
+    if (matches.length === 0) return null;
+    matches.forEach((match) => {
+      const emojiObj = message.guild.emojis.find((emoji) => emoji.name === match[1]);
+      if (emojiObj) {
+        newContent += message.content.substring(index, match.index) + emojiObj.toString();
+        index = match.index + match[0].length;
       }
     });
-    if (count) return newText;
-    return null;
+    newContent += message.content.substring(index);
+    return newContent;
   }
 
   async webhookSay(content, message) {
-    message.delete();
+    await message.delete();
     const webhooks = await message.channel.fetchWebhooks();
     let nanamiWebhook = webhooks.find((webhook) => webhook.name === WEBHOOK_NAME);
     if (!nanamiWebhook) {
+      /* maintains one webhook only but i dont care
+      const allWebhooks = await message.guild.fetchWebhooks();
+      const alterEgo = allWebhooks.find((webhook) => webhook.name === WEBHOOK_NAME);
+      if (alterEgo) await alterEgo.delete();
+      */
       nanamiWebhook = await message.channel.createWebhook(WEBHOOK_NAME, this.client.user.avatarURL);
     }
-
     await nanamiWebhook.send(content,
       { username: message.member.displayName, avatarURL: message.author.avatarURL });
-
-    const emoji = Parse.emoji(content);
-    recordService.recordEmoji(message.author.id, emoji);
-    if (emoji.length > 0) this.rollPoints(message.author.id, message);
   }
 
   rollPoints(authorId, message) {
@@ -138,6 +127,12 @@ class Nanami {
       case 'add':
         this.add(message, command.emoji, command.name);
         break;
+      case 'list':
+        this.list(message, command.page);
+        break;
+      case 'search':
+        this.search(message, command.keyword, command.page);
+        break;
       default:
         break;
     }
@@ -157,7 +152,6 @@ class Nanami {
         Print.commands()}`)
       .setFooter('Made by Fyre_Fli#4138',
         'https://cdn.discordapp.com/avatars/265902301443653644/993314979e5e569cd368a71d1881a34d.png');
-
     message.channel.send(helpEmbed);
   }
 
@@ -269,6 +263,34 @@ class Nanami {
     addEmbed.setDescription(`Added ${name === '' ? emojiObj.name : name} to ${message.guild.name}.`);
     addEmbed.setImage(emojiObj.url);
     message.channel.send(addEmbed);
+  }
+
+  list(message, page) {
+    message.channel.send(this.listEmoji(this.client.emojis, 'Emoji Catalog:', page));
+  }
+
+  search(message, keyword, page) {
+    const emojis = this.client.emojis.filter((emoji) => emoji.name.includes(keyword));
+    message.channel.send(this.listEmoji(emojis, `Results for "${keyword}":`, page));
+  }
+
+  listEmoji(emojis, title, page) {
+    const listEmbed = new Discord.RichEmbed()
+      .setColor(COLOR)
+      .setTitle(title);
+    const resPerPage = 25;
+    let content = '';
+    const keys = Array.from(emojis.keys());
+    for (let i = (page - 1) * resPerPage; i < page * resPerPage; i += 1) {
+      const emoji = emojis.get(keys[i]);
+      if (!emoji) break;
+      content += emoji.toString();
+      content += ` - ${emoji.name}\n`;
+    }
+    content += '\n';
+    content += `Page ${page} of ${Math.ceil(keys.length / resPerPage)}.`;
+    listEmbed.setDescription(content);
+    return listEmbed;
   }
 
   getRandomEmoji() {

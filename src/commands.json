@@ -155,5 +155,49 @@
         "default": ""
       }
     ]
+  },
+  {
+    "command": "list",
+    "description": "Lists all emojis nanami can use.",
+    "aliases": ["list"],
+    "usage": "n.list <page>",
+    "notes": "",
+    "parameters": [
+      {
+        "name": "page",
+        "type": {
+          "type": "Number"
+        },
+        "description": "The page of results you want.",
+        "optional": true,
+        "default": 1
+      }
+    ]
+  },
+  {
+    "command": "search",
+    "description": "Search for emojis matching a keywowrd.",
+    "aliases": ["search", "find"],
+    "usage": "n.search <keyword>",
+    "notes": "",
+    "parameters": [
+      {
+        "name": "keyword",
+        "type": {
+          "type": "String"
+        },
+        "description": "The keyword you want to search for.",
+        "optional": false
+      },
+      {
+        "name": "page",
+        "type": {
+          "type": "Number"
+        },
+        "description": "The page of results you want.",
+        "optional": true,
+        "default": 1
+      }
+    ]
   }
 ]
