@@ -270,7 +270,8 @@ class Nanami {
   }
 
   search(message, keyword, page) {
-    const emojis = this.client.emojis.filter((emoji) => emoji.name.toLowerCase().includes(keyword.toLowerCase()));
+    const emojis = this.client.emojis.filter((emoji) => emoji.name.toLowerCase()
+      .includes(keyword.toLowerCase()));
     message.channel.send(this.listEmoji(emojis, `Results for "${keyword}":`, page));
   }
 
