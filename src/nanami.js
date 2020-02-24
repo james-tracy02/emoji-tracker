@@ -293,21 +293,19 @@ class Nanami {
       .setTitle(title);
     const resPerPage = 25;
     let content = '';
-    let lastName = '';
-    let lastIndex = 2;
     const keys = Array.from(emojis.keys());
+    const seen = {};
     for (let i = (page - 1) * resPerPage; i < page * resPerPage; i += 1) {
       const emoji = emojis.get(keys[i]);
       if (!emoji) break;
       content += emoji.toString();
       content += ` - ${emoji.name}`;
-      if (lastName === emoji.name) {
-        content += `-${lastIndex}`;
-        lastIndex += 1;
+      if(seen[emoji.name]) {
+        seen[emoji.name] += 1;
+        content += '-' + seen[emoji.name]
       } else {
-        lastIndex = 2;
+        seen[emoji.name] = 1;
       }
-      lastName = emoji.name;
       content += '\n';
     }
     content += '\n';
