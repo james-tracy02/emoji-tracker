@@ -263,8 +263,7 @@ class Nanami {
   }
 
   add(message, emoji, name) {
-    let emojiObj;
-    emojiObj = this.client.emojis.find((e) => e.name === emoji
+    const emojiObj = this.client.emojis.find((e) => e.name === emoji
     && e.guild.id !== message.guild.id);
     if (!emojiObj) {
       message.channel.send('Invalid emoji!');
