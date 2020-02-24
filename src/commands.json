@@ -55,14 +55,6 @@
     ]
   },
   {
-    "command": "say",
-    "description": "Nanami replaces emoji names with emojis.",
-    "aliases": ["say", "msg", "use"],
-    "usage": "n.say <text>",
-    "notes": "",
-    "parameters": []
-  },
-  {
     "command": "info",
     "description": "Look up information on a given command.",
     "aliases": ["info"],

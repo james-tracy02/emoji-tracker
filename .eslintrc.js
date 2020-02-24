@@ -17,5 +17,6 @@ module.exports = {
   rules: {
     "linebreak-style": 0,
     "class-methods-use-this": 0,
+    "prefer-destructuring": 0
   },
 };

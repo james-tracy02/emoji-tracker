@@ -15,7 +15,7 @@ const PREFIX = 'n.';
 const USERID_REGEXP = /<@!?(\d*)>/;
 const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
 const WEBHOOK_NAME = 'Nanami Webhook';
-const NAME_REGEXP = /:([\w|\d]*):(?!\d+)/g;
+const NAME_REGEXP = /:([\w\d]*)(?:-(\d+))?:(?!\d+)/g;
 
 const COLOR = '#EBC8CB';
 
@@ -45,9 +45,9 @@ class Nanami {
   }
 
   async handleMessage(authorId, message) {
-    const replacedMessage = this.replaceNitroEmoji(message);
-    if (replacedMessage) this.webhookSay(replacedMessage, message);
-    const emoji = Parse.emoji(replacedMessage || message.content);
+    const res = this.replaceNitroEmoji(message);
+    if (res) this.say(message, res);
+    const emoji = Parse.emoji(res || message.content);
     recordService.recordEmoji(authorId, emoji);
   }
 
@@ -57,7 +57,7 @@ class Nanami {
     const matches = [...message.content.matchAll(NAME_REGEXP)];
     if (matches.length === 0) return null;
     matches.forEach((match) => {
-      const emojiObj = message.guild.emojis.find((emoji) => emoji.name === match[1]);
+      const emojiObj = this.getEmojiFromMatch(message, match);
       if (emojiObj) {
         newContent += message.content.substring(index, match.index) + emojiObj.toString();
         index = match.index + match[0].length;
@@ -65,6 +65,20 @@ class Nanami {
     });
     newContent += message.content.substring(index);
     return newContent;
+  }
+
+  getEmojiFromMatch(message, match) {
+    const emojiName = match[1];
+    const i = match[2];
+    let emojiObj;
+    if (i) {
+      const possibleEmojis = this.client.emojis.filter((emoji) => emoji.name === emojiName);
+      emojiObj = Array.from(possibleEmojis)[i - 1][1];
+    } else {
+      emojiObj = message.guild.emojis.find((emoji) => emoji.name === emojiName);
+      if (!emojiObj) emojiObj = this.client.emojis.find((emoji) => emoji.name === emojiName);
+    }
+    return emojiObj;
   }
 
   async webhookSay(content, message) {
@@ -158,7 +172,7 @@ class Nanami {
   view(message, target, select, index, scope) {
     const user = this.matchUser(target);
     if (user) return this.viewUser(message, user, select, index, scope);
-    const emoji = this.matchEmoji(target);
+    const emoji = this.matchEmoji(message, target);
     if (emoji) return this.viewEmoji(message, emoji, select, index, scope);
     return this.invalid(message, 'view');
   }
@@ -187,7 +201,6 @@ class Nanami {
     if (newText.length > 0) message.channel.send(newText);
 
     recordService.recordEmoji(message.author.id, emoji);
-    if (emoji.length > 0) this.rollPoints(message.author.id, message);
   }
 
   info(message, name) {
@@ -221,8 +234,7 @@ class Nanami {
 
   async big(message, emoji) {
     message.delete();
-
-    const match = this.matchEmoji(emoji);
+    const match = this.matchEmoji(message, emoji);
     if (!match) {
       message.channel.send('Invalid emoji.');
       return;
@@ -281,12 +293,22 @@ class Nanami {
       .setTitle(title);
     const resPerPage = 25;
     let content = '';
+    let lastName = '';
+    let lastIndex = 2;
     const keys = Array.from(emojis.keys());
     for (let i = (page - 1) * resPerPage; i < page * resPerPage; i += 1) {
       const emoji = emojis.get(keys[i]);
       if (!emoji) break;
       content += emoji.toString();
-      content += ` - ${emoji.name}\n`;
+      content += ` - ${emoji.name}`;
+      if (lastName === emoji.name) {
+        content += `-${lastIndex}`;
+        lastIndex += 1;
+      } else {
+        lastIndex = 2;
+      }
+      lastName = emoji.name;
+      content += '\n';
     }
     content += '\n';
     content += `Page ${page} of ${Math.ceil(keys.length / resPerPage)}.`;
@@ -315,9 +337,11 @@ class Nanami {
     return null;
   }
 
-  matchEmoji(target) {
+  matchEmoji(message, target) {
     const match = target.match(ID_REGEXP);
     if (match) return match[1];
+    const match2 = [...target.matchAll(NAME_REGEXP)];
+    if (match2.length > 0) return this.getEmojiFromMatch(message, match2[0]).id;
     return this.getEmojiFromName(target);
   }
 
@@ -477,6 +501,7 @@ class Nanami {
     if (targetEmoji) return targetEmoji.id;
     return null;
   }
+
 
   emojiToString(emojiId) {
     const targetEmoji = this.client.emojis.find((emoji) => emoji.id === emojiId);
