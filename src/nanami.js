@@ -308,14 +308,14 @@ class Nanami {
       const emoji = emojis.get(keys[i]);
       if (!emoji) break;
       content += emoji.toString();
-      content += ` - ${emoji.name}`;
+      content += ` - :${emoji.name}`;
       if (seen[emoji.name]) {
         seen[emoji.name] += 1;
         content += `-${seen[emoji.name]}`;
       } else {
         seen[emoji.name] = 1;
       }
-      content += '\n';
+      content += ':\n';
     }
     content += '\n';
     content += `Page ${page} of ${Math.ceil(keys.length / resPerPage)}.`;
