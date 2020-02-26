@@ -31,7 +31,6 @@ async function msgOnBehalf(msg, content, user) {
   const userEmbed = makeUserEmbed(msg.member);
   await msg.channel.send(userEmbed);
   msg.channel.send(content);
-  recordService.recordEmoji(msg.author.id, getEmojiIds(content));
 }
 
 function makeUserEmbed(member) {
