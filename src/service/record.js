@@ -1,8 +1,6 @@
 
-const Record = require('./record.js');
-
-// Open mongo connection
-require('./database.js');
+require('../database.js');
+const Record = require('../model/record.js');
 
 async function updateRecord(user, emoji, count) {
   const record = await Record.findOne({ user, emoji });

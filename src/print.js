@@ -1,17 +1,18 @@
 
-const commands = require('./commands.json');
-
-function printCommands() {
+function printCommands(commands) {
   let commandsMsg = '';
-  commands.forEach((command) => {
+  Object.keys(commands).forEach((cmdName) => {
+    const command = commands[cmdName].meta;
+    console.log(command);
     commandsMsg += `\`${command.command}\` - ${command.description}\n`;
   });
   return commandsMsg;
 }
 
-function printCommand(name) {
-  const command = commands.find((template) => template.command === name
-                                           || template.aliases.includes(name));
+function printCommand(name, commands) {
+  let command = commands[name]
+  || Object.keys(commands).find((cmdName) => commands[cmdName].aliases.include(name));
+  command = command.meta;
   if (!command) return '';
   let cmdMsg = '';
   cmdMsg += `\t**Description:** *${command.description}*\n`;
@@ -20,10 +21,14 @@ function printCommand(name) {
   command.aliases.forEach((alias) => {
     cmdMsg += `\`${alias}\` `;
   });
+  if(command.aliases.length === 0) {
+    cmdMsg += '*none*';
+  }
   cmdMsg += `\n\t**Usage:** \`${command.usage}\`\n`;
-  if (command.parameters.length !== 0) {
+  if (Object.keys(command.parameters).length !== 0) {
     cmdMsg += '\t**Parameters:**\n';
-    command.parameters.forEach((parameter) => {
+    Object.keys(command.parameters).forEach((parameterName) => {
+      const parameter = command.parameters[parameterName];
       cmdMsg += `\t\t\u2022 **${parameter.name}**:`;
       cmdMsg += `*${parameter.description}*`;
       if (parameter.optional) cmdMsg += ' (Optional)';

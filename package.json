@@ -2,10 +2,9 @@
   "name": "emoji-tracker",
   "repository": "https://github.com/james-tracy02/emoji-tracker.git",
   "description": "A Discord bot for tracking emoji usage on your server.",
-  "main": "client.js",
+  "main": "nanami.js",
   "scripts": {
-    "start": "nodemon client.js",
-    "test": "eslint src && mocha test"
+    "start": "nodemon nanami.js"
   },
   "dependencies": {
     "discord.js": "^11.5.1",
