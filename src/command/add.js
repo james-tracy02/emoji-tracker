@@ -25,21 +25,22 @@ module.exports = {
       },
       description: 'The new name for the emoji.',
       optional: true,
-      default: null
-    }
+      default: null,
+    },
   },
 
-  execute: function (msg, args) {
+  execute(msg, args) {
     const emojiObj = helpers.getEmojiObj(msg, args.emoji);
     if (!emojiObj) return msg.channel.send('Invalid emoji!');
-    if(msg.guild.emojis.has(emojiObj.id)) {
+    if (msg.guild.emojis.has(emojiObj.id)) {
       return msg.channel.send(
-        `This server already contains **${emojiObj.name}**!`)
+        `This server already contains **${emojiObj.name}**!`,
+      );
     }
     msg.guild.createEmoji(emojiObj.url, args.name || emojiObj.name); // need to error handle here
     const addEmbed = helpers.makeUserEmbed(msg.member);
     addEmbed.setDescription(`Added **${args.name || emojiObj.name}** from **${emojiObj.guild.name}** to **${msg.guild.name}**.`);
     addEmbed.setImage(emojiObj.url);
-    msg.channel.send(addEmbed);
-  }
+    return msg.channel.send(addEmbed);
+  },
 };

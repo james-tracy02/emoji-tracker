@@ -22,7 +22,7 @@ module.exports = {
     },
   },
 
-  execute: function (msg, args) {
+  execute(msg, args) {
     const desc = print.command(args.command, commands);
     if (desc === '') {
       msg.channel.send('Invalid command name.');
@@ -32,5 +32,5 @@ module.exports = {
       .setColor(configs.color)
       .setTitle(args.command)
       .setDescription(desc));
-  }
+  },
 };

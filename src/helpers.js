@@ -7,7 +7,8 @@ const configs = require('./configs.js');
 function setStatus(client) {
   client.user.setActivity(
     `emojis in ${client.guilds.size} servers!`,
-    { type: 'WATCHING' });
+    { type: 'WATCHING' },
+  );
 }
 
 function replaceNitroEmoji(msg) {
@@ -41,13 +42,13 @@ function makeUserEmbed(member) {
 }
 
 function getEmojiIds(content) {
-  const matches = [...content.matchAll(regexp.renderedEmojiGlobal)]
+  const matches = [...content.matchAll(regexp.renderedEmojiGlobal)];
   return matches.map((match) => match[1]);
 }
 
 function getEmojiByName(msg, name, index) {
   // fun feature?
-  if(name === '?') {
+  if (name === '?') {
     const emojiIds = Array.from(msg.client.emojis.keys());
     const randomId = emojiIds[Math.floor(Math.random() * emojiIds.length)];
     return msg.client.emojis.get(randomId);
@@ -65,18 +66,18 @@ function getEmojiByName(msg, name, index) {
 
 function getEmojiObj(msg, emoji) {
   const matchRendered = emoji.match(regexp.renderedEmoji);
-  if(matchRendered) {
+  if (matchRendered) {
     const emojiId = matchRendered[1];
     return msg.client.emojis.get(emojiId);
   }
   const matchUnrendered = emoji.match(regexp.unrenderedEmoji);
-  if(matchUnrendered) {
+  if (matchUnrendered) {
     const name = matchUnrendered[1];
     const index = matchUnrendered[2];
     return getEmojiByName(msg, name, index);
   }
   const matchName = emoji.match(regexp.emojiName);
-  if(matchName) {
+  if (matchName) {
     const name = matchName[1];
     const index = matchName[2];
     return getEmojiByName(msg, name, index);
@@ -92,10 +93,10 @@ function getUserIds(msg, user) {
     case 'server':
       return Array.from(msg.guild.members.keys());
     case 'all':
-      return []
+      return [];
     default:
       const match = user.match(regexp.userMention);
-      if(match) return [match[1]];
+      if (match) return [match[1]];
       return null;
   }
 }
@@ -144,4 +145,4 @@ module.exports = {
   makeUserEmbed,
   getEmojiIds,
   listEmoji,
-}
+};

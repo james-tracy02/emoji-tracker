@@ -4,17 +4,17 @@ const { listEmoji } = require('../helpers.js');
 
 module.exports = {
   meta: {
-    command: 'search',
-    description: 'List all available emojis.',
-    aliases: [],
-    usage: `${configs.prefix}search`,
+    command: 'search-guild',
+    description: 'List all available emojis froma given guild.',
+    aliases: ['searchg'],
+    usage: `${configs.prefix}search-guild`,
     parameters: {
       keyword: {
-        name: 'keyword',
+        name: 'guild',
         type: {
           type: 'String',
         },
-        description: 'The keyword to search for.',
+        description: 'The guild to search emojis from.',
         optional: false,
       },
       page: {
@@ -30,8 +30,8 @@ module.exports = {
   },
 
   execute(msg, args) {
-    const emojis = msg.client.emojis.filter((emoji) => emoji.name.toLowerCase()
-      .includes(args.keyword.toLowerCase()));
-    msg.channel.send(listEmoji(emojis, `Results for "${args.keyword}":`, args.page));
+    const emojis = msg.client.emojis.filter((emoji) => emoji.guild.name.toLowerCase()
+      .includes(args.guild.toLowerCase()));
+    msg.channel.send(listEmoji(emojis, `Results from guild "${args.guild}":`, args.page));
   },
 };

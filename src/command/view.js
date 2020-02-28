@@ -24,7 +24,7 @@ function getDisplaySet(msg, records, page, lines) {
 async function viewUser(msg, userIds, select, index, scope) {
   let username;
   let records;
-  switch(userIds.length) {
+  switch (userIds.length) {
     case 0:
       username = 'All Users';
       records = await recordService.getRecordsForAllUsers();
@@ -39,10 +39,9 @@ async function viewUser(msg, userIds, select, index, scope) {
       break;
   }
 
-  records = records.filter((record) =>
-  (scope === 'global'
-  ? msg.client.emojis.has(record.emoji)
-  : msg.guild.emojis.has(record.emoji)));
+  records = records.filter((record) => (scope === 'global'
+    ? msg.client.emojis.has(record.emoji)
+    : msg.guild.emojis.has(record.emoji)));
 
   const page = (select === 'page' ? index : 1);
   const lines = (select === 'top' ? index : configs.resultsPerPage);
@@ -73,7 +72,7 @@ async function viewUser(msg, userIds, select, index, scope) {
 async function viewEmoji(msg, emojiObj, select, index, scope) {
   let records = await recordService.getRecordsForEmoji(emojiObj.id);
 
-  if(scope === 'local') records = records.filter((record) => msg.guild.members.has(record.user));
+  if (scope === 'local') records = records.filter((record) => msg.guild.members.has(record.user));
   const page = (select === 'page' ? index : 1);
   const lines = (select === 'top' ? index : configs.resultsPerPage);
 
@@ -114,50 +113,49 @@ module.exports = {
       target: {
         name: 'target',
         type: {
-          type: 'String'
+          type: 'String',
         },
         description: 'The target to query. Can be a user or an emoji.',
         optional: true,
-        default: "me",
+        default: 'me',
       },
       select: {
         name: 'select',
         type: {
           type: 'Enum',
-          values: ['top', 'page']
+          values: ['top', 'page'],
         },
         description: 'The selection type of the query. `top` indicates the results with the highest count. `page` indicates an offset.',
         optional: true,
-        default: 'page'
+        default: 'page',
       },
       index: {
         name: 'index',
         type: {
-          type: 'Number'
+          type: 'Number',
         },
         description: 'The page number or number of items to be displayed.',
         optional: true,
-        default: 1
+        default: 1,
       },
       scope: {
         name: 'scope',
         type: {
           type: 'Enum',
-          values: ['local', 'global']
+          values: ['local', 'global'],
         },
         description: 'The scope of the query. `local` indicates results related to this guild only. `global` indicates all results.',
         optional: true,
-        default: 'local'
-      }
-    }
+        default: 'local',
+      },
+    },
   },
 
-  execute: function (msg, args) {
-    const userIds = helpers.getUserIds(msg, args.target)
-    if (userIds)
-      return viewUser(msg, userIds, args.select, args.index, args.scope);
+  execute(msg, args) {
+    const userIds = helpers.getUserIds(msg, args.target);
+    if (userIds) return viewUser(msg, userIds, args.select, args.index, args.scope);
     const emojiObj = helpers.getEmojiObj(msg, args.target);
-    if(emojiObj) return viewEmoji(msg, emojiObj, args.select, args.index, args.scope);
+    if (emojiObj) return viewEmoji(msg, emojiObj, args.select, args.index, args.scope);
     return msg.channel.send('Invalid query.');
-  }
+  },
 };

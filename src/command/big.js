@@ -1,8 +1,6 @@
 
-const { RichEmbed } = require('discord.js');
 const helpers = require('../helpers.js');
 const configs = require('../configs.js');
-const print = require('../print.js');
 const { recordEmoji } = require('../service/record.js');
 
 module.exports = {
@@ -23,7 +21,7 @@ module.exports = {
     },
   },
 
-  execute: function (msg, args) {
+  execute(msg, args) {
     msg.delete();
     const emojiObj = helpers.getEmojiObj(msg, args.emoji);
     if (!emojiObj) {
@@ -34,5 +32,5 @@ module.exports = {
     bigEmbed.setImage(emojiObj.url);
     msg.channel.send(bigEmbed);
     recordEmoji(msg.author.id, [emojiObj.id]);
-  }
+  },
 };

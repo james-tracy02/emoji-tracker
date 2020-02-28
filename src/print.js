@@ -21,7 +21,7 @@ function printCommand(name, commands) {
   command.aliases.forEach((alias) => {
     cmdMsg += `\`${alias}\` `;
   });
-  if(command.aliases.length === 0) {
+  if (command.aliases.length === 0) {
     cmdMsg += '*none*';
   }
   cmdMsg += `\n\t**Usage:** \`${command.usage}\`\n`;

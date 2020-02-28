@@ -12,7 +12,7 @@ module.exports = {
     parameters: {},
   },
 
-  execute: function (msg, args) {
+  execute(msg, args) {
     msg.channel.send(new RichEmbed()
       .setColor(configs.color)
       .setTitle('Click here to invite me to your server!')
@@ -20,5 +20,5 @@ module.exports = {
       .setURL(configs.invite)
       .setFooter(`Made by ${configs.owner}`,
         configs.ownerAvatar));
-  }
+  },
 };

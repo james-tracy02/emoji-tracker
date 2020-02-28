@@ -21,8 +21,9 @@ module.exports = {
     },
   },
 
-  execute: function (msg, args) {
+  execute(msg, args) {
     msg.channel.send(
-      listEmoji(msg.client.emojis, 'Emoji Catalog:', args.page));
-  }
+      listEmoji(msg.client.emojis, 'Emoji Catalog:', args.page),
+    );
+  },
 };

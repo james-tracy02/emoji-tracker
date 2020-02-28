@@ -6,13 +6,17 @@ const ID_REGEXP = /<a?:[\w|\d]*:(\d*)>/;
 const EMOJI_REGEXP = /<a?:[\w|\d]*:\d*>/g;
 
 function tokenize(message) {
-  return message.split(/\s+/);
+  const matches = [...message.matchAll(/[^\s\"]+|\"([^\"]+)\"/g)];
+  return matches.map((match) => {
+    if (match[1]) return match[1];
+    return match[0];
+  });
 }
 
 function getMeta(name) {
   if (!name) return null;
   const cmd = commands[name]
-  || Object.keys(commands).find((cmdName) => commands[cmdName].meta.aliases.includes(name));
+  || commands[Object.keys(commands).find((cmdName) => commands[cmdName].meta.aliases.includes(name))];
   if (!cmd) return null;
   return cmd.meta;
 }
@@ -31,7 +35,7 @@ function parameterize(tokens, meta) {
     } else if (param.optional) { // Parameter optional and token did not match
       cmd[param.name] = param.default;
     } else { // Parameter is *not* optional and token did not match
-      return { type: 'invalid', cmd };
+      return null;
     }
     i += 1;
   }
@@ -41,6 +45,6 @@ function parameterize(tokens, meta) {
 module.exports = function (message) {
   const tokens = tokenize(message);
   const meta = getMeta(tokens[0]);
-  if (!meta) return { type: 'none' };
+  if (!meta) return null;
   return parameterize(tokens, meta);
-}
+};
