@@ -70,7 +70,12 @@ async function viewUser(msg, userIds, select, index, scope) {
 }
 
 async function viewEmoji(msg, emojiObj, select, index, scope) {
-  let records = await recordService.getRecordsForEmoji(emojiObj.id);
+  let records;
+  if(emojiObj === 'total') {
+    records = await recordService.getRecordsForAllEmoji();
+  } else {
+    records = await recordService.getRecordsForEmoji(emojiObj.id);
+  }
 
   if (scope === 'local') records = records.filter((record) => msg.guild.members.has(record.user));
   const page = (select === 'page' ? index : 1);
@@ -82,13 +87,13 @@ async function viewEmoji(msg, emojiObj, select, index, scope) {
     return;
   }
   const maxVal = records[0].count;
-  const emojiName = emojiObj.name;
+  const emojiName = emojiObj.name || 'Totals';
   let response = `**${emojiName}${scope === global ? '(Global)' : ''}:**\n`;
   response += `*Total: ${total(records)}*\n`;
   displaySet.forEach((record, i) => {
     const member = msg.guild.members.get(record.user);
     response += `${print.bar(record.count, maxVal, configs.displayWidth)} `;
-    response += `${emojiObj.toString()} `;
+    response += emojiObj === 'total' ? '' : emojiObj.toString() + ' ';
     response += `${member ? member.displayName : msg.client.users.get(record.user).username} `;
     response += `${print.rank(page, i)} `;
     response += '\n';
@@ -156,7 +161,7 @@ module.exports = function (alterEgo) {
       const userIds = helpers.getUserIds(msg, args.target);
       if (userIds) return viewUser(msg, userIds, args.select, args.index, args.scope);
       const emojiObj = helpers.getEmojiObj(msg, args.target);
-      if (emojiObj) return viewEmoji(msg, emojiObj, args.select, args.index, args.scope);
+      if (emojiObj || args.target === 'total') return viewEmoji(msg, emojiObj || 'total', args.select, args.index, args.scope);
       return msg.channel.send('Invalid query.');
     },
   };

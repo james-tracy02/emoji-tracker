@@ -62,6 +62,18 @@ function getRecordsForAllUsers() {
     .sort({ count: 'descending' });
 }
 
+function getRecordsForAllEmoji() {
+  return Record.aggregate([
+    {
+      $group: {
+        _id: '$user',
+        user: { $first: '$user' },
+        count: { $sum: '$count' },
+      },
+    }])
+    .sort({ count: 'descending' });
+}
+
 module.exports = {
   recordEmoji,
   updateRecord,
@@ -69,4 +81,5 @@ module.exports = {
   getRecordsForUser,
   getRecordsForUsers,
   getRecordsForAllUsers,
+  getRecordsForAllEmoji,
 };
