@@ -1,5 +1,5 @@
 
-module.eports = {
+module.exports = {
   guildCreate: require('./guildCreate.js'),
   message: require('./message.js'),
   messageReactionAdd: require('./messageReactionAdd.js'),
