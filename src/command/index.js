@@ -1,4 +1,11 @@
 
-require('fs').readdirSync(__dirname).forEach((file) => {
-  if (file !== 'index.js') module.exports[file.slice(0, -3)] = require(`./${file}`);
-});
+module.exports = function (alterEgo) {
+  return {
+    add: require('./add.js')(alterEgo),
+    big: require('./big.js')(alterEgo),
+    list: require('./list.js')(alterEgo),
+    'search-guild': require('./search-guild.js')(alterEgo),
+    search: require('./search.js')(alterEgo),
+    view: require('./view.js')(alterEgo),
+  }
+}

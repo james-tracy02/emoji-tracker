@@ -103,59 +103,61 @@ async function viewEmoji(msg, emojiObj, select, index, scope) {
   msg.channel.send(response);
 }
 
-module.exports = {
-  meta: {
-    command: 'view',
-    description: 'Look up emoji stats on a given target.',
-    aliases: ['display'],
-    usage: `${configs.prefix}view <target> <select> <index> <scope>`,
-    parameters: {
-      target: {
-        name: 'target',
-        type: {
-          type: 'String',
+module.exports = function (alterEgo) {
+  return {
+    meta: {
+      name: 'view',
+      description: 'Look up emoji stats on a given target.',
+      aliases: ['display'],
+      usage: `${alterEgo.prefix}view <target> <select> <index> <scope>`,
+      parameters: [
+        {
+          name: 'target',
+          type: {
+            type: 'String',
+          },
+          description: 'The target to query. Can be a user or an emoji.',
+          optional: true,
+          default: 'me',
         },
-        description: 'The target to query. Can be a user or an emoji.',
-        optional: true,
-        default: 'me',
-      },
-      select: {
-        name: 'select',
-        type: {
-          type: 'Enum',
-          values: ['top', 'page'],
+        {
+          name: 'select',
+          type: {
+            type: 'Enum',
+            values: ['top', 'page'],
+          },
+          description: 'The selection type of the query. `top` indicates the results with the highest count. `page` indicates an offset.',
+          optional: true,
+          default: 'page',
         },
-        description: 'The selection type of the query. `top` indicates the results with the highest count. `page` indicates an offset.',
-        optional: true,
-        default: 'page',
-      },
-      index: {
-        name: 'index',
-        type: {
-          type: 'Number',
+        {
+          name: 'index',
+          type: {
+            type: 'Number',
+          },
+          description: 'The page number or number of items to be displayed.',
+          optional: true,
+          default: 1,
         },
-        description: 'The page number or number of items to be displayed.',
-        optional: true,
-        default: 1,
-      },
-      scope: {
-        name: 'scope',
-        type: {
-          type: 'Enum',
-          values: ['local', 'global'],
+        {
+          name: 'scope',
+          type: {
+            type: 'Enum',
+            values: ['local', 'global'],
+          },
+          description: 'The scope of the query. `local` indicates results related to this guild only. `global` indicates all results.',
+          optional: true,
+          default: 'local',
         },
-        description: 'The scope of the query. `local` indicates results related to this guild only. `global` indicates all results.',
-        optional: true,
-        default: 'local',
-      },
+      ],
     },
-  },
 
-  execute(msg, args) {
-    const userIds = helpers.getUserIds(msg, args.target);
-    if (userIds) return viewUser(msg, userIds, args.select, args.index, args.scope);
-    const emojiObj = helpers.getEmojiObj(msg, args.target);
-    if (emojiObj) return viewEmoji(msg, emojiObj, args.select, args.index, args.scope);
-    return msg.channel.send('Invalid query.');
-  },
+    execute(msg, args) {
+      const userIds = helpers.getUserIds(msg, args.target);
+      if (userIds) return viewUser(msg, userIds, args.select, args.index, args.scope);
+      const emojiObj = helpers.getEmojiObj(msg, args.target);
+      if (emojiObj) return viewEmoji(msg, emojiObj, args.select, args.index, args.scope);
+      return msg.channel.send('Invalid query.');
+    },
+  };
 };

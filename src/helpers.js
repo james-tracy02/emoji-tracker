@@ -101,9 +101,9 @@ function getUserIds(msg, user) {
   }
 }
 
-function listEmoji(emojis, title, page) {
+function listEmoji(alterEgo, emojis, title, page) {
   const listEmbed = new RichEmbed()
-    .setColor(configs.color)
+    .setColor(alterEgo.color)
     .setTitle(title);
   let content = '';
   const keys = Array.from(emojis.keys());

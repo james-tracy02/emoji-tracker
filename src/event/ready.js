@@ -1,8 +1,8 @@
 
 const { setStatus } = require('../helpers.js');
 
-module.exports = function (client) {
+module.exports = function (alterEgo) {
   return function () {
-    setStatus(client);
+    setStatus(alterEgo.client);
   };
 };

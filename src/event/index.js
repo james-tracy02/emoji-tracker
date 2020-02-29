@@ -1,4 +1,7 @@
 
-require('fs').readdirSync(__dirname).forEach((file) => {
-  if (file !== 'index.js') module.exports[file.slice(0, -3)] = require(`./${file}`);
-});
+module.eports = {
+  guildCreate: require('./guildCreate.js'),
+  message: require('./message.js'),
+  messageReactionAdd: require('./messageReactionAdd.js'),
+  ready: require('./ready.js'),
+};
