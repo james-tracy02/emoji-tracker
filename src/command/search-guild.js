@@ -5,7 +5,7 @@ module.exports = function (alterEgo) {
   return {
     meta: {
       name: 'search-guild',
-      description: 'List all available emojis froma given guild.',
+      description: 'List all available emojis from a given guild.',
       aliases: ['searchg'],
       usage: `${alterEgo.prefix}search-guild`,
       parameters: [
