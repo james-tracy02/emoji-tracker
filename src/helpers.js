@@ -14,6 +14,7 @@ function setStatus(client) {
 function replaceNitroEmoji(msg) {
   let content = '';
   let index = 0;
+  let count = 0;
   const matches = [...msg.content.matchAll(regexp.unrenderedEmojiGlobal)];
   if (matches.length === 0) return null;
   matches.forEach((match) => {
@@ -21,9 +22,11 @@ function replaceNitroEmoji(msg) {
     if (emojiObj) {
       content += msg.content.substring(index, match.index) + emojiObj.toString();
       index = match.index + match[0].length;
+      count ++;
     }
   });
   content += msg.content.substring(index);
+  if(count === 0) return null;
   return content;
 }
 
