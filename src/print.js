@@ -1,4 +1,3 @@
-
 function printBar(count, maxValue, width) {
   const inc = width / maxValue;
   const pad = count.toString().length;

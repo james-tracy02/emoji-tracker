@@ -1,18 +1,36 @@
 
 require('dotenv').config();
+const TOKEN = process.env.TOKEN;
+const PREFIX = 'n.';
 const Discord = require('discord.js');
-const AlterEgo = require('alter-ego.js');
-const events = require('./src/event');
-const commands = require ('./src/command');
+const commands = require('./src/commands');
+const emojiManager = require('./src/emojiManager');
 const client = new Discord.Client();
 
-new AlterEgo(client)
-  .setPrefix('n.')
-  .setName('Nanami Bot')
-  .setDescription('I keep track of your emojis!')
-  .setColor('#EBC8CB')
-  .setOwnerId('265902301443653644')
-  .setInvite('https://discordapp.com/oauth2/authorize?client_id=624386401735147531&permissions=1074129984&scope=bot')
-  .setEvents(events)
-  .setCommands(commands)
-  .execute();
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  client.user.setPresence({ game: { name: `emoji in ${client.guilds.size} servers` , type: 'WATCHING' }});
+});
+
+client.on('message', msg => {
+  if(msg.author.bot) {
+    return;
+  }
+  if(msg.content.startsWith(PREFIX)) {
+    const command = msg.content.substring(PREFIX.length);
+    const tokens = command.split(" ");
+    const cmd = tokens[0];
+    const args = tokens.slice(1);
+    commands.execute(msg, cmd, args);
+  } else {
+    const newContent = emojiManager.enrich(msg);
+    if(newContent) {
+      emojiManager.msgOnBehalf(msg, newContent, msg.author.id);
+      emojiManager.count(msg.author.id, newContent);
+    } else {
+      emojiManager.count(msg.author.id, msg.content);
+    }
+  }
+});
+
+client.login(TOKEN);

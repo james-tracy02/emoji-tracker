@@ -1,151 +1,153 @@
-
+const regexp = require('./regexp');
 const { RichEmbed } = require('discord.js');
-const regexp = require('./regexp.js');
-const recordService = require('./service/record.js');
-const configs = require('./configs.js');
 
-function setStatus(client) {
-  client.user.setActivity(
-    `emojis in ${client.guilds.size} servers!`,
-    { type: 'WATCHING' },
-  );
-}
-
-function replaceNitroEmoji(msg) {
-  let content = '';
-  let index = 0;
-  let count = 0;
-  const matches = [...msg.content.matchAll(regexp.unrenderedEmojiGlobal)];
-  if (matches.length === 0) return null;
-  matches.forEach((match) => {
-    const emojiObj = getEmojiByName(msg, match[1], match[2]);
-    if (emojiObj) {
-      content += msg.content.substring(index, match.index) + emojiObj.toString();
-      index = match.index + match[0].length;
-      count ++;
+function sortCountsDesc(counts) {
+  counts.sort((a, b) => {
+    const d = b.count - a.count
+    if(d !== 0) {
+      return d;
+    } else {
+      return b.emojiId - a.emojiId;
     }
   });
-  content += msg.content.substring(index);
-  if(count === 0) return null;
-  return content;
+  return counts;
 }
 
-async function msgOnBehalf(msg, content, user) {
-  msg.delete();
-  const userEmbed = makeUserEmbed(msg.member);
-  await msg.channel.send(userEmbed);
-  msg.channel.send(content);
+function timeToString(time) {
+  return `${time.multiplier} ${time.unit.charAt(0).toUpperCase() + time.unit.slice(1)}${time.multiplier > 1 ? 's' : ''}`;
 }
 
-function makeUserEmbed(member) {
-  const color = member.displayHexColor;
-  return new RichEmbed()
-    .setColor(color === '#000000' ? '#FEFEFE' : color)
-    .setAuthor(member.displayName, member.user.avatarURL);
-}
-
-function getEmojiIds(content) {
-  const matches = [...content.matchAll(regexp.renderedEmojiGlobal)];
-  return matches.map((match) => match[1]);
-}
-
-function getEmojiByName(msg, name, index) {
-  // fun feature?
-  if (name === '?') {
-    const emojiIds = Array.from(msg.client.emojis.keys());
-    const randomId = emojiIds[Math.floor(Math.random() * emojiIds.length)];
-    return msg.client.emojis.get(randomId);
+function parseTime(time) {
+  if(!time) {
+    return null;
   }
-  let emojiObj;
-  if (index) {
-    const possibleEmojis = Array.from(msg.client.emojis.filter((emoji) => emoji.name === name));
-    emojiObj = possibleEmojis[index - 1][1];
-  } else {
-    emojiObj = msg.guild.emojis.find((emoji) => emoji.name === name);
+  const match = time.match(regexp.time);
+  if(!match) {
+    return null;
   }
-  if (!emojiObj) emojiObj = msg.client.emojis.find((emoji) => emoji.name === name);
-  return emojiObj;
+  const multiplier = match[1] || 1;
+  const unit = match[2];
+  return {
+    multiplier,
+    unit,
+  };
 }
 
-function getEmojiObj(msg, emoji) {
-  const matchRendered = emoji.match(regexp.renderedEmoji);
-  if (matchRendered) {
-    const emojiId = matchRendered[1];
-    return msg.client.emojis.get(emojiId);
+function getDate(time) {
+  if(!time) {
+    return new Date(0);
   }
-  const matchUnrendered = emoji.match(regexp.unrenderedEmoji);
-  if (matchUnrendered) {
-    const name = matchUnrendered[1];
-    const index = matchUnrendered[2];
-    return getEmojiByName(msg, name, index);
-  }
-  const matchName = emoji.match(regexp.emojiName);
-  if (matchName) {
-    const name = matchName[1];
-    const index = matchName[2];
-    return getEmojiByName(msg, name, index);
-  }
-  return null;
-}
+  const now = new Date();
 
-function getUserIds(msg, user) {
-  switch (user) {
-    case 'me':
-    case 'my':
-      return [msg.author.id];
-    case 'server':
-      return Array.from(msg.guild.members.keys());
-    case 'all':
-      return [];
+  switch (time.unit.toLowerCase()) {
+    case 'hour':
+      now.setHours(now.getHours() - time.multiplier);
+      break;
+    case 'day':
+      now.setDate(now.getDate() - time.multiplier);
+      break;
+    case 'week':
+      now.setDate(now.getDate() - time.multiplier * 7);
+      break;
+    case 'month':
+      now.setMonth(now.getMonth() - time.multiplier);
+      break;
     default:
-      const match = user.match(regexp.userMention);
-      if (match) return [match[1]];
-      return null;
+      now = new Date(0);
   }
+  return now.toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function listEmoji(alterEgo, emojis, title, page) {
-  const listEmbed = new RichEmbed()
-    .setColor(alterEgo.color)
-    .setTitle(title);
-  let content = '';
-  const keys = Array.from(emojis.keys());
-  const seen = {};
-  for (let j = 0; j < (page - 1) * configs.resultsPerPage; j += 1) {
-    const emoji = emojis.get(keys[j]);
-    if (!emoji) break;
-    if (seen[emoji.name]) {
-      seen[emoji.name] += 1;
+async function addPageControls(msg) {
+  await msg.react('⏮️');
+  await msg.react('◀️');
+  await msg.react('▶️');
+  await msg.react('⏭️');
+}
+
+async function addGlobalToggle(msg) {
+  await msg.react('🌎');
+}
+
+async function awaitMenuAction(msg, responseMsg, options, maxPages) {
+  const filter = (reaction, user) => ['◀️', '▶️', '⏭️', '⏮️'].includes(reaction.emoji.name) && user.id === msg.author.id;
+  const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: 30000 });
+  options.msg = responseMsg;
+  const reaction = collected.first();
+  if(!reaction) {
+    return;
+  }
+  if(reaction.emoji.name === '▶️') {
+    options.page = Math.min(options.page + 1, maxPages);
+  } else if(reaction.emoji.name === '◀️') {
+    options.page = Math.max(options.page - 1, 1);
+  } else if(reaction.emoji.name === '⏭️') {
+    options.page = maxPages;
+  } else if(reaction.emoji.name === '⏮️') {
+    options.page = 1;
+  }
+  reaction.remove(msg.author.id);
+  return options;
+}
+
+async function awaitMenuActionWithGlobal(msg, responseMsg, options, maxPages) {
+  const filter = (reaction, user) => ['◀️', '▶️', '⏭️', '⏮️', '🌎'].includes(reaction.emoji.name) && user.id === msg.author.id;
+  const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: 30000 });
+  options.msg = responseMsg;
+  const reaction = collected.first();
+  if(!reaction) {
+    return;
+  }
+  if(reaction.emoji.name === '▶️') {
+    options.page = Math.min(options.page + 1, maxPages);
+  } else if(reaction.emoji.name === '◀️') {
+    options.page = Math.max(options.page - 1, 1);
+  } else if(reaction.emoji.name == '🌎') {
+    options.global = !options.global;
+    options.page = 1;
+  } else if(reaction.emoji.name === '⏭️') {
+    options.page = maxPages;
+  } else if(reaction.emoji.name === '⏮️') {
+    options.page = 1;
+  }
+  reaction.remove(msg.author.id);
+  return options;
+}
+
+function flattenRecordsByEmoji(records) {
+  return flattenRecordsByField(records, 'emojiId');
+}
+
+function flattenRecordsByUser(records) {
+  return flattenRecordsByField(records, 'userId');
+}
+
+function flattenRecordsByField(records, fieldName) {
+  const flattened = {};
+  const counts = [];
+  for(let i = 0; i < records.length; i++) {
+    const field = records[i][fieldName];
+    if(!flattened[field]) {
+      flattened[field] = 1;
     } else {
-      seen[emoji.name] = 1;
+      flattened[field] += 1;
     }
   }
-  for (let i = (page - 1) * configs.resultsPerPage; i < page * configs.resultsPerPage; i += 1) {
-    const emoji = emojis.get(keys[i]);
-    if (!emoji) break;
-    content += emoji.toString();
-    content += ` **:${emoji.name}`;
-    if (seen[emoji.name]) {
-      seen[emoji.name] += 1;
-      content += `-${seen[emoji.name]}`;
-    } else {
-      seen[emoji.name] = 1;
-    }
-    content += `:** *${emoji.guild.name}*\n`;
+  for (let key of Object.keys(flattened)) {
+    counts.push({[fieldName]: key, count: flattened[key]});
   }
-  content += '\n';
-  content += `Page ${page} of ${Math.ceil(keys.length / configs.resultsPerPage)}.`;
-  listEmbed.setDescription(content);
-  return listEmbed;
+  return counts;
 }
 
 module.exports = {
-  setStatus,
-  replaceNitroEmoji,
-  msgOnBehalf,
-  getEmojiObj,
-  getUserIds,
-  makeUserEmbed,
-  getEmojiIds,
-  listEmoji,
-};
+  sortCountsDesc,
+  getDate,
+  addPageControls,
+  addGlobalToggle,
+  awaitMenuAction,
+  awaitMenuActionWithGlobal,
+  flattenRecordsByEmoji,
+  flattenRecordsByUser,
+  parseTime,
+  timeToString,
+}

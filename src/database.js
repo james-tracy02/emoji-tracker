@@ -1,10 +1,9 @@
+const mysql = require('mysql');
+const connection = mysql.createConnection(process.env.JAWSDB_URL);
 
-const mongoose = require('mongoose');
+connection.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
 
-const uri = process.env.MONGODB_URI;
-
-function connect() {
-  mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-}
-
-module.exports = connect();
+module.exports = connection;

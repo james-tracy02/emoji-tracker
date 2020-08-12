@@ -1,6 +1,5 @@
-
 module.exports = {
-  resultsPerPage: 20,
-  responseCutoff: 1800,
-  displayWidth: 80,
+  resultsPerPage: 10,
+  displayWidth: 60,
+  responseLimit: 1800,
 };
