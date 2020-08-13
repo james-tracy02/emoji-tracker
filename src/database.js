@@ -1,19 +1,20 @@
 const mysql = require('mysql');
-const connection = mysql.createConnection(process.env.JAWSDB_URL);
+const pool = mysql.createPool(process.env.JAWSDB_URL);
 
-connection.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
-
-setInterval(ping, 10000)
+setInterval(ping, 3600000);
 
 function ping() {
-  connection.query('SELECT 1;', (err) => {
+  pool.getConnection((err, connection) => {
     if(err) {
       console.log(err);
+      return;
     }
+    connection.query('SELECT 1;', (err) => {
+      if(err) {
+        console.log(err);
+      }
+    });
   });
 }
 
-module.exports = connection;
+module.exports = pool;
