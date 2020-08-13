@@ -1,5 +1,4 @@
 const regexp = require('./regexp');
-const { RichEmbed } = require('discord.js');
 
 function sortCountsDesc(counts) {
   counts.sort((a, b) => {
@@ -139,6 +138,23 @@ function flattenRecordsByField(records, fieldName) {
   return counts;
 }
 
+function getEmojiByName(msg, name, index) {
+  if (name === '?') {
+    const emojiIds = Array.from(msg.client.emojis.keys());
+    const randomId = emojiIds[Math.floor(Math.random() * emojiIds.length)];
+    return msg.client.emojis.get(randomId);
+  }
+  let emojiObj;
+  if (index) {
+    const possibleEmojis = Array.from(msg.client.emojis.filter((emoji) => emoji.name === name));
+    emojiObj = possibleEmojis[index - 1][1];
+  } else {
+    emojiObj = msg.guild.emojis.find((emoji) => emoji.name === name);
+  }
+  if (!emojiObj) emojiObj = msg.client.emojis.find((emoji) => emoji.name === name);
+  return emojiObj;
+}
+
 module.exports = {
   sortCountsDesc,
   getDate,
@@ -150,4 +166,5 @@ module.exports = {
   flattenRecordsByUser,
   parseTime,
   timeToString,
+  getEmojiByName,
 }

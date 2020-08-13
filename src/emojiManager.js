@@ -1,6 +1,7 @@
 const regexp = require('./regexp');
 const records = require('./service/records');
 const { RichEmbed } = require('discord.js');
+const helpers = require('./helpers');
 
 function count(userId, content) {
     const matches = [...content.matchAll(regexp.emoji)];
@@ -21,7 +22,7 @@ function enrich(msg) {
   const matches = [...msg.content.matchAll(regexp.unrenderedEmojiGlobal)];
   if (matches.length === 0) return null;
   matches.forEach((match) => {
-    const emojiObj = getEmojiByName(msg, match[1], match[2]);
+    const emojiObj = helpers.getEmojiByName(msg, match[1], match[2]);
     if (emojiObj) {
       content += msg.content.substring(index, match.index) + emojiObj.toString();
       index = match.index + match[0].length;
@@ -45,23 +46,6 @@ function makeUserEmbed(member) {
   return new RichEmbed()
     .setColor(color === '#000000' ? '#FEFEFE' : color)
     .setAuthor(member.displayName, member.user.avatarURL);
-}
-
-function getEmojiByName(msg, name, index) {
-  if (name === '?') {
-    const emojiIds = Array.from(msg.client.emojis.keys());
-    const randomId = emojiIds[Math.floor(Math.random() * emojiIds.length)];
-    return msg.client.emojis.get(randomId);
-  }
-  let emojiObj;
-  if (index) {
-    const possibleEmojis = Array.from(msg.client.emojis.filter((emoji) => emoji.name === name));
-    emojiObj = possibleEmojis[index - 1][1];
-  } else {
-    emojiObj = msg.guild.emojis.find((emoji) => emoji.name === name);
-  }
-  if (!emojiObj) emojiObj = msg.client.emojis.find((emoji) => emoji.name === name);
-  return emojiObj;
 }
 
 module.exports = {
