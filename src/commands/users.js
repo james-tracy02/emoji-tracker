@@ -50,7 +50,11 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   let response = `**${emoji.name}** ${time ? 'Past ' + helpers.timeToString(time) : 'All time'} ${options.global ? '(All Users)' : '(Server Members)'}\n`;
   if(filteredCounts.length === 0) {
     response += '\nNothing to display.'
-    return msg.channel.send(response);
+    if(options.msg) {
+      responseMsg = await options.msg.edit(response);
+    } else {
+      responseMsg = await msg.channel.send(response);
+    }
   }
   for(let i = 0; i < pageCounts.length; i++) {
     const count = pageCounts[i];
