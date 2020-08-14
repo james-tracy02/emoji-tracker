@@ -16,7 +16,7 @@ function emoji(msg, args) {
   } else {
     const match = user.match(regexp.userMention);
     if(!match) {
-      return message.channel.send("Invalid user.");
+      return msg.channel.send("Invalid user.");
     }
     const userObj = msg.channel.guild.members.get(match[1]);
     if(userObj) {
@@ -75,7 +75,11 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
   let response = `**${name}** ${time ? 'Past ' + helpers.timeToString(time) : 'All time'} ${options.global ? '(All Emojis)' : '(Server Emojis)'}\n`;
   if(filteredCounts.length === 0) {
     response += '\nNothing to display.'
-    return msg.channel.send(response);
+    if(options.msg) {
+      return options.msg.edit(response);
+    } else {
+      return msg.channel.send(response);
+    }
   }
   for(let i = 0; i < pageCounts.length; i++) {
     const count = pageCounts[i];

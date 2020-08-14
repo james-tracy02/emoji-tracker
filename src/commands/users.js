@@ -51,9 +51,9 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   if(filteredCounts.length === 0) {
     response += '\nNothing to display.'
     if(options.msg) {
-      responseMsg = await options.msg.edit(response);
+      return options.msg.edit(response);
     } else {
-      responseMsg = await msg.channel.send(response);
+      return msg.channel.send(response);
     }
   }
   for(let i = 0; i < pageCounts.length; i++) {
