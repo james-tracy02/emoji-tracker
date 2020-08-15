@@ -76,7 +76,7 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   if(!newOptions) {
     return;
   }
-  return displayUsers(msg, emoji, time, userCounts, options);
+  return displayUsers(msg, emoji, time, userCounts, newOptions);
 }
 
 module.exports = users;

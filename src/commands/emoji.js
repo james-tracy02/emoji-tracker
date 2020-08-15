@@ -71,7 +71,6 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
   const end = start + configs.resultsPerPage;
   const pageCounts = filteredCounts.slice(start, end);
 
-
   let response = `**${name}** ${time ? 'Past ' + helpers.timeToString(time) : 'All time'} ${options.global ? '(All Emojis)' : '(Server Emojis)'}\n`;
   if(filteredCounts.length === 0) {
     response += '\nNothing to display.';
