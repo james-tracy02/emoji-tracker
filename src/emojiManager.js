@@ -10,9 +10,13 @@ function count(userId, content) {
       const emojiId = match[1];
       emojiIds.push(emojiId);
     });
-    if(emojiIds.length > 0) {
-      records.insertRecords(emojiIds, userId, new Date().toISOString().slice(0, 19).replace('T', ' '));
-    }
+    countIds(userId, emojiIds);
+}
+
+function countIds(userId, emojiIds) {
+  if(emojiIds.length > 0) {
+    records.insertRecords(emojiIds, userId, new Date().toISOString().slice(0, 19).replace('T', ' '));
+  }
 }
 
 function enrich(msg) {
@@ -36,20 +40,14 @@ function enrich(msg) {
 
 async function msgOnBehalf(msg, content, user) {
   msg.delete();
-  const userEmbed = makeUserEmbed(msg.member);
+  const userEmbed = helpers.makeUserEmbed(msg.member);
   await msg.channel.send(userEmbed);
   msg.channel.send(content);
-}
-
-function makeUserEmbed(member) {
-  const color = member.displayHexColor;
-  return new RichEmbed()
-    .setColor(color === '#000000' ? '#FEFEFE' : color)
-    .setAuthor(member.displayName, member.user.avatarURL);
 }
 
 module.exports = {
   count,
   enrich,
   msgOnBehalf,
+  countIds,
 };

@@ -8,12 +8,9 @@ function users(msg, args) {
   const emoji = args[0];
   const time = args[1];
   if(emoji) {
-    const match = emoji.match(regexp.renderedEmoji);
-    if(match) {
-      const emojiObj = msg.channel.guild.emojis.get(match[1]);
-      if(emojiObj) {
-        return displayUsersForEmoji(msg, emojiObj, time)
-      }
+    const emojiObj = helpers.getEmojiObj(msg, emoji);
+    if(emojiObj) {
+      return displayUsersForEmoji(msg, emojiObj, time)
     }
   }
   msg.channel.send('Invalid emoji.');

@@ -1,4 +1,5 @@
 const regexp = require('./regexp');
+const { RichEmbed } = require('discord.js');
 
 function sortCountsDesc(counts) {
   counts.sort((a, b) => {
@@ -155,6 +156,34 @@ function getEmojiByName(msg, name, index) {
   return emojiObj;
 }
 
+function makeUserEmbed(member) {
+  const color = member.displayHexColor;
+  return new RichEmbed()
+    .setColor(color === '#000000' ? '#FEFEFE' : color)
+    .setAuthor(member.displayName, member.user.avatarURL);
+}
+
+function getEmojiObj(msg, emoji) {
+  const matchRendered = emoji.match(regexp.renderedEmoji);
+  if (matchRendered) {
+    const emojiId = matchRendered[1];
+    return msg.client.emojis.get(emojiId);
+  }
+  const matchUnrendered = emoji.match(regexp.unrenderedEmoji);
+  if (matchUnrendered) {
+    const name = matchUnrendered[1];
+    const index = matchUnrendered[2];
+    return getEmojiByName(msg, name, index);
+  }
+  const matchName = emoji.match(regexp.emojiName);
+  if (matchName) {
+   const name = matchName[1];
+   const index = matchName[2];
+   return getEmojiByName(msg, name, index);
+  }
+  return null;
+}
+
 module.exports = {
   sortCountsDesc,
   getDate,
@@ -167,4 +196,6 @@ module.exports = {
   parseTime,
   timeToString,
   getEmojiByName,
+  makeUserEmbed,
+  getEmojiObj,
 }
