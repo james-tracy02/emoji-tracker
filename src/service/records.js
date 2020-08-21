@@ -4,7 +4,9 @@ const TABLE_NAME = 'records';
 function getRecordsForUser(userId, time, callback) {
   pool.getConnection((err, connection) => {
     if (err) {
-      connection.release();
+      if(connection) {
+        connection.release();
+      }
       throw err;
     }
     connection.query(`SELECT * FROM ${TABLE_NAME} WHERE userId = ${userId} AND time >= ?`, [time],
@@ -24,7 +26,9 @@ function getRecordsForUser(userId, time, callback) {
 function getRecordsForUsers(userIds, time, callback) {
   pool.getConnection((err, connection) => {
     if (err) {
-      connection.release();
+      if(connection) {
+        connection.release();
+      }
       throw err;
     }
     connection.query(`SELECT * FROM ${TABLE_NAME} WHERE userId IN (${userIds}) AND time >= ?`, [time],
@@ -44,7 +48,9 @@ function getRecordsForUsers(userIds, time, callback) {
 function getAllRecords(time, callback) {
   pool.getConnection((err, connection) => {
     if (err) {
-      connection.release();
+      if(connection) {
+        connection.release();
+      }
       throw err;
     }
     connection.query(`SELECT * FROM ${TABLE_NAME} WHERE time >= ?`, [time],
@@ -64,7 +70,9 @@ function getAllRecords(time, callback) {
 function getRecordsForEmoji(emojiId, time, callback) {
   pool.getConnection((err, connection) => {
     if (err) {
-      connection.release();
+      if(connection) {
+        connection.release();
+      }
       throw err;
     }
     connection.query(`SELECT * FROM ${TABLE_NAME} WHERE emojiId = ${emojiId} AND time >= ?`, [time],
@@ -88,7 +96,9 @@ function insertRecords(emojiIds, userId, time) {
   });
   pool.getConnection((err, connection) => {
     if (err) {
-      connection.release();
+      if(connection) {
+        connection.release();
+      }
       throw err;
     }
     connection.query(`INSERT INTO ${TABLE_NAME} VALUES ?`, [values],
