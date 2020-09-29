@@ -35,7 +35,7 @@ function parseTime(time) {
 
 function getDate(time) {
   if(!time) {
-    return new Date(0);
+    return null;
   }
   const now = new Date();
 

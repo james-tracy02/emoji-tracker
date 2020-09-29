@@ -1,6 +1,4 @@
-const mysql = require('mysql');
-const pool = mysql.createPool(process.env.JAWSDB_URL);
-pool.connectionLimit = 10;
-pool.acquireTimeout = 60 * 1000;
+const { Sequelize } = require("sequelize");
+const sequelize = new Sequelize(process.env.JAWSDB_URL);
 
-module.exports = pool;
+module.exports = sequelize;

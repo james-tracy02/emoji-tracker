@@ -1,114 +1,88 @@
-const pool = require('../database');
-const TABLE_NAME = 'records';
+const database = require("../database");
+const { DataTypes, Op } = require("sequelize");
 
-function getRecordsForUser(userId, time, callback) {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      if(connection) {
-        connection.release();
-      }
-      throw err;
-    }
-    connection.query(`SELECT * FROM ${TABLE_NAME} WHERE userId = ${userId} AND time >= ?`, [time],
-      (err, result) => {
-        connection.release();
-        if(err) {
-          console.log("Failed to retrieve emoji data.");
-          throw err;
-        } else {
-          console.log('Retrieved records for user.')
-          callback(result);
-        }
-      });
+const Record = database.define("record",
+  {
+    userId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+    },
+    emojiId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+    },
+    time: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+  }, {
+    timestamps: false
   });
+
+function getRecordsForUser(userId, time) {
+  const whereClause = {
+    userId: userId
+  };
+
+  if(time) {
+    whereClause.time = {
+      [Op.gt]: time
+    }
+  }
+
+  return Record.findAll({ where: whereClause });
 }
 
-function getRecordsForUsers(userIds, time, callback) {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      if(connection) {
-        connection.release();
-      }
-      throw err;
+function getRecordsForUsers(userIds, time) {
+  const whereClause = {
+    userId: {
+      [Op.in]: userIds,
     }
-    connection.query(`SELECT * FROM ${TABLE_NAME} WHERE userId IN (${userIds}) AND time >= ?`, [time],
-      (err, result) => {
-        connection.release();
-        if(err) {
-          console.log("Failed to retrieve emoji data.");
-          throw err;
-        } else {
-          console.log('Retrieved records for users.')
-          callback(result);
-        }
-      });
-  });
+  };
+
+  if(time) {
+    whereClause.time = {
+      [Op.gt]: time
+    }
+  }
+
+  return Record.findAll({ where: whereClause });
 }
 
-function getAllRecords(time, callback) {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      if(connection) {
-        connection.release();
-      }
-      throw err;
-    }
-    connection.query(`SELECT * FROM ${TABLE_NAME} WHERE time >= ?`, [time],
-      (err, result) => {
-        connection.release();
-        if(err) {
-          console.log("Failed to retrieve emoji data.");
-          throw err;
-        } else {
-          console.log('Retrieved records for all users.')
-          callback(result);
+function getAllRecords(time) {
+  if(time) {
+    return Record.findAll({
+      where: {
+        time: {
+          [Op.gt]: time
         }
-      });
-  });
-}
-
-function getRecordsForEmoji(emojiId, time, callback) {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      if(connection) {
-        connection.release();
       }
-      throw err;
-    }
-    connection.query(`SELECT * FROM ${TABLE_NAME} WHERE emojiId = ${emojiId} AND time >= ?`, [time],
-      (err, result) => {
-        connection.release();
-        if(err) {
-          console.log("Failed to retrieve user data.");
-          throw err;
-        } else {
-          console.log('Retrieved records for emoji.')
-          callback(result);
-        }
-      });
     });
+  }
+  return Record.findAll();
+}
+
+function getRecordsForEmoji(emojiId, time) {
+  const whereClause = {
+    emojiId: {
+      [Op.in]: emojiId,
+    }
+  };
+
+  if(time) {
+    whereClause.time = {
+      [Op.gt]: time
+    }
+  }
+
+  return Record.findAll({ where: whereClause });
 }
 
 function insertRecords(emojiIds, userId, time) {
-  const values = [];
   emojiIds.forEach(emojiId => {
-    values.push([userId, emojiId, time]);
-  });
-  pool.getConnection((err, connection) => {
-    if (err) {
-      if(connection) {
-        connection.release();
-      }
-      throw err;
-    }
-    connection.query(`INSERT INTO ${TABLE_NAME} VALUES ?`, [values],
-        err => {
-          connection.release();
-          if(err) {
-            console.log("Failed to insert emoji data.");
-            throw err;
-          }
-      });
+    Record.create({ emojiId: emojiId, userId: userId, time: time });
   });
 }
 

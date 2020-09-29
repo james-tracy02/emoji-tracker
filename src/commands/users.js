@@ -17,7 +17,8 @@ function users(msg, args) {
 }
 
 function displayUsersForEmoji(msg, emoji, time) {
-  const userCounts = records.getRecordsForEmoji(emoji.id, helpers.getDate(time), records => {
+  const userCounts = records.getRecordsForEmoji(emoji.id, helpers.getDate(time))
+  .then(records => {
     const userCounts = helpers.flattenRecordsByUser(records);
     displayUsers(msg, emoji, time, userCounts);
   });

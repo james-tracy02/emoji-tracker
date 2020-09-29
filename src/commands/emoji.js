@@ -28,7 +28,8 @@ function emoji(msg, args) {
 }
 
 function displayEmojiForUser(msg, user, time) {
-  const emojiCounts = records.getRecordsForUser(user.id, helpers.getDate(time), records => {
+  const emojiCounts = records.getRecordsForUser(user.id, helpers.getDate(time))
+  .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
     const member = msg.guild.member(user);
     displayEmoji(msg, member.nickname, time, emojiCounts);
@@ -37,14 +38,16 @@ function displayEmojiForUser(msg, user, time) {
 
 function displayEmojiForUsers(msg, users, time) {
   const userIds = [...users.keys()];
-  const emojiCounts = records.getRecordsForUsers(userIds, helpers.getDate(time), records => {
+  const emojiCounts = records.getRecordsForUsers(userIds, helpers.getDate(time))
+  .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
     displayEmoji(msg, msg.channel.guild.name, time, emojiCounts);
   });
 }
 
 function displayEmojiForAllUsers(msg, time) {
-  const emojiCounts = records.getAllRecords(helpers.getDate(time), records => {
+  const emojiCounts = records.getAllRecords(helpers.getDate(time))
+  .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
     displayEmoji(msg, "All Users", time, emojiCounts, { page: 1, global: true });
   });
