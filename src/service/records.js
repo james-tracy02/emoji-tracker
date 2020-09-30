@@ -66,9 +66,7 @@ function getAllRecords(time) {
 
 function getRecordsForEmoji(emojiId, time) {
   const whereClause = {
-    emojiId: {
-      [Op.in]: emojiId,
-    }
+    emojiId: emojiId,
   };
 
   if(time) {
