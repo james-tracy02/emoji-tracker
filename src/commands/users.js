@@ -6,7 +6,7 @@ const configs = require('../configs');
 
 function users(msg, args) {
   const emoji = args[0];
-  const time = args[1];
+  const time = helpers.parseTime(args[1]);
   if(emoji) {
     const emojiObj = helpers.getEmojiObj(msg, emoji);
     if(emojiObj) {
