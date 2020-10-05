@@ -3,6 +3,7 @@ const users = require('./commands/users');
 const big = require('./commands/big');
 const help = require('./commands/help');
 const add = require('./commands/add');
+const invite = require('./commands/invite');
 
 const commands = {
   emoji,
@@ -10,6 +11,7 @@ const commands = {
   big,
   help,
   add,
+  invite,
 };
 
 function execute(msg, cmd, args) {
