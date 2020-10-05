@@ -3,19 +3,19 @@ const records = require('./service/records');
 const { RichEmbed } = require('discord.js');
 const helpers = require('./helpers');
 
-function count(userId, content) {
+function count(userId, guildId, content) {
     const matches = [...content.matchAll(regexp.emoji)];
     const emojiIds = [];
     matches.forEach((match) => {
       const emojiId = match[1];
       emojiIds.push(emojiId);
     });
-    countIds(userId, emojiIds);
+    countIds(userId, emojiIds, guildId);
 }
 
-function countIds(userId, emojiIds) {
+function countIds(userId, emojiIds, guildId) {
   if(emojiIds.length > 0) {
-    records.insertRecords(emojiIds, userId, new Date().toISOString().slice(0, 19).replace('T', ' '));
+    records.insertRecords(emojiIds, userId, guildId, new Date().toISOString().slice(0, 19).replace('T', ' '));
   }
 }
 

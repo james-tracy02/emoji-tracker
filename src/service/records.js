@@ -6,12 +6,14 @@ const Record = database.define("record",
     userId: {
       type: DataTypes.STRING,
       allowNull: false,
-      primaryKey: true,
     },
     emojiId: {
       type: DataTypes.STRING,
       allowNull: false,
-      primaryKey: true,
+    },
+    guildId: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     time: {
       type: DataTypes.DATE,
@@ -21,9 +23,11 @@ const Record = database.define("record",
     timestamps: false
   });
 
+Record.removeAttribute("id");
+
 function getRecordsForUser(userId, time) {
   const whereClause = {
-    userId: userId
+    userId,
   };
 
   if(time) {
@@ -35,11 +39,9 @@ function getRecordsForUser(userId, time) {
   return Record.findAll({ where: whereClause });
 }
 
-function getRecordsForUsers(userIds, time) {
+function getRecordsForGuild(guildId, time) {
   const whereClause = {
-    userId: {
-      [Op.in]: userIds,
-    }
+    guildId,
   };
 
   if(time) {
@@ -66,7 +68,7 @@ function getAllRecords(time) {
 
 function getRecordsForEmoji(emojiId, time) {
   const whereClause = {
-    emojiId: emojiId,
+    emojiId,
   };
 
   if(time) {
@@ -78,15 +80,15 @@ function getRecordsForEmoji(emojiId, time) {
   return Record.findAll({ where: whereClause });
 }
 
-function insertRecords(emojiIds, userId, time) {
+function insertRecords(emojiIds, userId, guildId, time) {
   emojiIds.forEach(emojiId => {
-    Record.create({ emojiId: emojiId, userId: userId, time: time });
+    Record.create({ emojiId, userId, guildId, time });
   });
 }
 
 module.exports = {
   getRecordsForUser,
-  getRecordsForUsers,
+  getRecordsForGuild,
   getAllRecords,
   getRecordsForEmoji,
   insertRecords,

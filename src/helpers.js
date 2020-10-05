@@ -1,5 +1,6 @@
 const regexp = require('./regexp');
 const { RichEmbed } = require('discord.js');
+const configs = require('./configs');
 
 function sortCountsDesc(counts) {
   counts.sort((a, b) => {
@@ -71,7 +72,7 @@ async function addGlobalToggle(msg) {
 
 async function awaitMenuAction(msg, responseMsg, options, maxPages) {
   const filter = (reaction, user) => ['◀️', '▶️', '⏭️', '⏮️'].includes(reaction.emoji.name) && user.id === msg.author.id;
-  const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: 30000 });
+  const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: configs.reactionTimeout });
   options.msg = responseMsg;
   const reaction = collected.first();
   if(!reaction) {
@@ -92,7 +93,7 @@ async function awaitMenuAction(msg, responseMsg, options, maxPages) {
 
 async function awaitMenuActionWithGlobal(msg, responseMsg, options, maxPages) {
   const filter = (reaction, user) => ['◀️', '▶️', '⏭️', '⏮️', '🌎'].includes(reaction.emoji.name) && user.id === msg.author.id;
-  const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: 30000 });
+  const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: configs.reactionTimeout });
   options.msg = responseMsg;
   const reaction = collected.first();
   if(!reaction) {

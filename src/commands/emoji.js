@@ -10,9 +10,9 @@ function emoji(msg, args) {
   if(!user) {
     displayEmojiForUser(msg, msg.author, time);
   } else if(user.toLowerCase() === "server") {
-    displayEmojiForUsers(msg, msg.channel.guild.members, time);
+    displayEmojiForGuild(msg, msg.channel.guild, time);
   } else if(user.toLowerCase() === "all") {
-    displayEmojiForAllUsers(msg, time);
+    displayEmojiForAll(msg, time);
   } else {
     const match = user.match(regexp.userMention);
     if(!match) {
@@ -36,16 +36,16 @@ function displayEmojiForUser(msg, user, time) {
   });
 }
 
-function displayEmojiForUsers(msg, users, time) {
-  const userIds = [...users.keys()];
-  const emojiCounts = records.getRecordsForUsers(userIds, helpers.getDate(time))
+function displayEmojiForGuild(msg, guild, time) {
+  const guildId = guild.id;
+  const emojiCounts = records.getRecordsForGuild(guildId, helpers.getDate(time))
   .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
-    displayEmoji(msg, msg.channel.guild.name, time, emojiCounts);
+    displayEmoji(msg, guild.name, time, emojiCounts);
   });
 }
 
-function displayEmojiForAllUsers(msg, time) {
+function displayEmojiForAll(msg, time) {
   const emojiCounts = records.getAllRecords(helpers.getDate(time))
   .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
