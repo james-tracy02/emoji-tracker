@@ -38,9 +38,12 @@ function getDate(time) {
   if(!time) {
     return null;
   }
-  const now = new Date();
+  let now = new Date();
 
   switch (time.unit.toLowerCase()) {
+    case 'minute':
+      now.setMinutes(now.getMinutes() - time.multiplier);
+      break;
     case 'hour':
       now.setHours(now.getHours() - time.multiplier);
       break;
