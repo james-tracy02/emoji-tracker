@@ -52,7 +52,7 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   for(let i = 0; i < pageCounts.length; i++) {
     const count = pageCounts[i];
     const member = msg.channel.guild.members.get(count.userId);
-    const username = member ? member.nickname : msg.client.users.get(count.userId).username;
+    const username = member ? member.displayName : msg.client.users.get(count.userId).username;
     response += `${print.bar(count.count, filteredCounts[0].count, configs.displayWidth)} `;
     response += `${emoji.toString()} ${username} `;
     response += `${print.rank(options.page, i)} `;
