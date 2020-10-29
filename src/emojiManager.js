@@ -40,7 +40,7 @@ function enrich(msg) {
 
 async function msgOnBehalf(msg, content, user) {
   msg.delete();
-  const userEmbed = helpers.makeUserEmbed(msg.member);
+  const userEmbed = helpers.makeUserEmbed(msg);
   await msg.channel.send(userEmbed);
   msg.channel.send(content);
 }

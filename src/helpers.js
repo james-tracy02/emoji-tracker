@@ -160,11 +160,10 @@ function getEmojiByName(msg, name, index) {
   return emojiObj;
 }
 
-function makeUserEmbed(member) {
-  const color = member.displayHexColor;
+function makeUserEmbed(msg) {
   return new RichEmbed()
-    .setColor(color === '#000000' ? '#FEFEFE' : color)
-    .setAuthor(member.displayName, member.user.avatarURL);
+    .setColor('#FEFEFE')
+    .setAuthor(msg.author.username);
 }
 
 function getEmojiObj(msg, emoji) {

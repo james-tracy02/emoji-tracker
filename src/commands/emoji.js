@@ -7,18 +7,29 @@ const configs = require('../configs');
 function emoji(msg, args) {
   const user = args[0];
   const time = helpers.parseTime(args[1]);
+  let match;
+  if(user) {
+    match = user.match(regexp.userMention);
+  }
   if(!user) {
     displayEmojiForUser(msg, msg.author, time);
-  } else if(user.toLowerCase() === "server") {
+  }
+  else if(user.toLowerCase() === "server") {
     displayEmojiForGuild(msg, msg.channel.guild, time);
-  } else if(user.toLowerCase() === "all") {
+  }
+  else if(user.toLowerCase() === "all") {
     displayEmojiForAll(msg, time);
-  } else {
-    const match = user.match(regexp.userMention);
-    if(!match) {
-      return msg.channel.send("Invalid user.");
-    }
+  }
+  else if(match) {
     const userObj = msg.channel.guild.members.get(match[1]);
+    if(userObj) {
+      displayEmojiForUser(msg, userObj, time);
+    } else {
+      msg.channel.send("Invalid user.");
+    }
+  }
+  else {
+    const userObj = msg.client.users.find(targetUser => targetUser.displayName === user || targetUser.username === user);
     if(userObj) {
       displayEmojiForUser(msg, userObj, time);
     } else {

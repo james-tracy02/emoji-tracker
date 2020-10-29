@@ -19,7 +19,7 @@ function addEmoji(msg, emoji, name) {
     );
   }
   msg.guild.createEmoji(emoji.url, name || emoji.name);
-  const addEmbed = helpers.makeUserEmbed(msg.member);
+  const addEmbed = helpers.makeUserEmbed(msg);
   addEmbed.setDescription(`Added **${emoji.name}** from **${emoji.guild.name}** to **${msg.guild.name}** as **${name || emoji.name}**.`);
   addEmbed.setImage(emoji.url);
   return msg.channel.send(addEmbed);
