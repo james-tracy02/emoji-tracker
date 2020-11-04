@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "alter-ego.js": "^1.0.3",
-    "discord.js": "^11.5.1",
+    "discord.js": "^11.6.4",
     "dotenv": "^8.1.0",
     "mocha": "^7.0.1",
     "mongodb": "^3.3.2",

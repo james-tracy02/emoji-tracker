@@ -166,6 +166,13 @@ function makeUserEmbed(msg) {
     .setAuthor(msg.author.username);
 }
 
+function makeMemberEmbed(member) {
+  const color = member.displayHexColor;
+  return new RichEmbed()
+    .setColor(color === '#000000' ? '#FEFEFE' : color)
+    .setAuthor(member.displayName, member.user.avatarURL);
+}
+
 function getEmojiObj(msg, emoji) {
   const matchRendered = emoji.match(regexp.renderedEmoji);
   if (matchRendered) {
@@ -201,4 +208,5 @@ module.exports = {
   getEmojiByName,
   makeUserEmbed,
   getEmojiObj,
+  makeMemberEmbed,
 }

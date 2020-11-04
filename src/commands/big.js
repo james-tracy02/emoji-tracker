@@ -8,7 +8,7 @@ function big(msg, args) {
     msg.channel.send('Invalid emoji.');
     return;
   }
-  const bigEmbed = helpers.makeUserEmbed(msg.member);
+  const bigEmbed = helpers.makeMemberEmbed(msg.member);
   bigEmbed.setImage(emojiObj.url);
   msg.channel.send(bigEmbed);
   emojiManager.countIds(msg.author.id, [emojiObj.id]);

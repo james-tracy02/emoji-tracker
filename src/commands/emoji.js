@@ -21,29 +21,23 @@ function emoji(msg, args) {
     displayEmojiForAll(msg, time);
   }
   else if(match) {
-    const userObj = msg.channel.guild.members.get(match[1]);
-    if(userObj) {
-      displayEmojiForUser(msg, userObj, time);
+    const memberObj = msg.channel.guild.members.get(match[1]);
+    if(memberObj) {
+      displayEmojiForMember(msg, memberObj, time);
     } else {
       msg.channel.send("Invalid user.");
     }
   }
   else {
-    const userObj = msg.client.users.find(targetUser => targetUser.displayName === user || targetUser.username === user);
-    if(userObj) {
-      displayEmojiForUser(msg, userObj, time);
-    } else {
-      msg.channel.send("Invalid user.");
-    }
+    msg.channel.send("Invalid user.");
   }
 }
 
-function displayEmojiForUser(msg, user, time) {
-  const emojiCounts = records.getRecordsForUser(user.id, helpers.getDate(time))
+function displayEmojiForMember(msg, member, time) {
+  const emojiCounts = records.getRecordsForUser(member.user.id, helpers.getDate(time))
   .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
-    const member = msg.guild.member(user);
-    displayEmoji(msg, member.nickname, time, emojiCounts);
+    displayEmoji(msg, member.displayName, time, emojiCounts);
   });
 }
 
