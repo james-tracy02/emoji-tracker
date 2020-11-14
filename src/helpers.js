@@ -69,8 +69,9 @@ async function addPageControls(msg) {
   await msg.react('⏭️');
 }
 
-async function addGlobalToggle(msg) {
+async function addViewControls(msg) {
   await msg.react('🌎');
+  await msg.react('0️⃣');
 }
 
 async function awaitMenuAction(msg, responseMsg, options, maxPages) {
@@ -94,25 +95,35 @@ async function awaitMenuAction(msg, responseMsg, options, maxPages) {
   return options;
 }
 
-async function awaitMenuActionWithGlobal(msg, responseMsg, options, maxPages) {
-  const filter = (reaction, user) => ['◀️', '▶️', '⏭️', '⏮️', '🌎'].includes(reaction.emoji.name) && user.id === msg.author.id;
+async function awaitMenuActionWithViews(msg, responseMsg, options, maxPages) {
+  const filter = (reaction, user) => ['◀️', '▶️', '⏭️', '⏮️', '🌎', '0️⃣'].includes(reaction.emoji.name) && user.id === msg.author.id;
   const collected = await responseMsg.awaitReactions(filter,  { max: 1, time: configs.reactionTimeout });
   options.msg = responseMsg;
   const reaction = collected.first();
   if(!reaction) {
     return;
   }
-  if(reaction.emoji.name === '▶️') {
-    options.page = Math.min(options.page + 1, maxPages);
-  } else if(reaction.emoji.name === '◀️') {
-    options.page = Math.max(options.page - 1, 1);
-  } else if(reaction.emoji.name == '🌎') {
-    options.global = !options.global;
-    options.page = 1;
-  } else if(reaction.emoji.name === '⏭️') {
-    options.page = maxPages;
-  } else if(reaction.emoji.name === '⏮️') {
-    options.page = 1;
+  switch (reaction.emoji.name) {
+    case '▶️':
+      options.page = Math.min(options.page + 1, maxPages);
+      break;
+    case '◀️':
+      options.page = Math.max(options.page - 1, 1);
+      break;
+    case '🌎':
+      options.global = !options.global;
+      options.page = 1;
+      break;
+    case '⏭️':
+      options.page = maxPages;
+      break;
+    case '⏮️':
+      options.page = 1;
+      break;
+    case '0️⃣':
+      options.showUnused = !options.showUnused;
+      options.page = 1;
+      break;
   }
   reaction.remove(msg.author.id);
   return options;
@@ -198,9 +209,9 @@ module.exports = {
   sortCountsDesc,
   getDate,
   addPageControls,
-  addGlobalToggle,
+  addViewControls,
   awaitMenuAction,
-  awaitMenuActionWithGlobal,
+  awaitMenuActionWithViews,
   flattenRecordsByEmoji,
   flattenRecordsByUser,
   parseTime,

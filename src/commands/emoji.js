@@ -12,7 +12,7 @@ function emoji(msg, args) {
     match = user.match(regexp.userMention);
   }
   if(!user) {
-    displayEmojiForUser(msg, msg.author, time);
+    displayEmojiForMember(msg, msg.member, time);
   }
   else if(user.toLowerCase() === "server") {
     displayEmojiForGuild(msg, msg.channel.guild, time);
@@ -64,9 +64,18 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
     options = {
       page: 1,
       global: false,
+      showUnused: false,
     };
   }
   filteredCounts = helpers.sortCountsDesc(filteredCounts);
+
+  if(options.showUnused) {
+    msg.client.emojis.forEach((emoji) => {
+      if(!filteredCounts.some((count) => count.emojiId === emoji.id)) {
+        filteredCounts.push({ emojiId: emoji.id, count: 0});
+      }
+    });
+  }
 
   if(!options.global) {
     filteredCounts = filteredCounts.filter((count) => msg.guild.emojis.has(count.emojiId));
@@ -101,9 +110,9 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
   }
   if(!options.msg) {
     await helpers.addPageControls(responseMsg);
-    await helpers.addGlobalToggle(responseMsg);
+    await helpers.addViewControls(responseMsg);
   }
-  const newOptions = await helpers.awaitMenuActionWithGlobal(msg, responseMsg, options, maxPages);
+  const newOptions = await helpers.awaitMenuActionWithViews(msg, responseMsg, options, maxPages);
   if(!newOptions) {
     return;
   }
