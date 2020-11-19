@@ -21,6 +21,10 @@ function displayUsersForEmoji(msg, emoji, time) {
   .then(records => {
     const userCounts = helpers.flattenRecordsByUser(records);
     displayUsers(msg, emoji, time, userCounts);
+  })
+  .catch(err => {
+    console.error(`Error fetching records for emoji: ${emojiId}`);
+    console.error(err);
   });
 }
 

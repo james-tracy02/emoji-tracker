@@ -38,6 +38,10 @@ function displayEmojiForMember(msg, member, time) {
   .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
     displayEmoji(msg, member.displayName, time, emojiCounts);
+  })
+  .catch(err => {
+    console.error(`Error fetching records for member: ${member.id}`);
+    console.error(err);
   });
 }
 
@@ -47,6 +51,10 @@ function displayEmojiForGuild(msg, guild, time) {
   .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
     displayEmoji(msg, guild.name, time, emojiCounts);
+  })
+  .catch(err => {
+    console.error(`Error fetching records for guild: ${guild}`);
+    console.error(err);
   });
 }
 
@@ -55,6 +63,10 @@ function displayEmojiForAll(msg, time) {
   .then(records => {
     const emojiCounts = helpers.flattenRecordsByEmoji(records);
     displayEmoji(msg, "All Users", time, emojiCounts, { page: 1, global: true });
+  })
+  .catch(err => {
+    console.error(`Error fetching all records.`);
+    console.error(err);
   });
 }
 
