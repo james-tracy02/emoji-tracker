@@ -35,7 +35,16 @@ function getSticker(name) {
   return Sticker.findOne({ where: whereClause });
 }
 
+function deleteSticker(name) {
+  const whereClause = {
+    name
+  };
+
+  return Sticker.destroy({ where: whereClause });
+}
+
 module.exports = {
   createSticker,
   getSticker,
+  deleteSticker,
 };

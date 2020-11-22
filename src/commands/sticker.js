@@ -8,8 +8,8 @@ function sticker(msg, args) {
 
   if(name && url) {
     stickers.createSticker(name, msg.guild.id, url)
-    .then(() => msg.channel.send(`Created sticker *${name}*`))
-    .catch(() => msg.channel.send(`Sticker with name *${name}* already exists. Please use a different name.`));
+    .then(() => msg.channel.send(`Created sticker **${name}**`))
+    .catch(() => msg.channel.send(`Sticker with name **${name}** already exists. Please use a different name.`));
   } else {
     msg.channel.send("Invalid sticker command.")
   }

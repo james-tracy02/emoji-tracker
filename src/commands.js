@@ -6,6 +6,7 @@ const add = require('./commands/add');
 const invite = require('./commands/invite');
 const sticker = require('./commands/sticker');
 const use = require('./commands/use');
+const remove = require('./commands/remove');
 
 const commands = {
   emoji,
@@ -16,6 +17,7 @@ const commands = {
   invite,
   sticker,
   use,
+  remove,
 };
 
 function execute(msg, cmd, args) {
