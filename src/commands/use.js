@@ -9,7 +9,7 @@ function use(msg, args) {
     msg.delete();
     stickers.getSticker(name)
     .then((sticker) => {
-      helpers.msgOnBehalf(msg, "", msg.author.id, [{ image: { url: sticker.url }}]);
+      helpers.msgOnBehalf(msg, `*${name}*`, msg.author.id, [{ image: { url: sticker.url }}]);
     });
   } else {
     msg.channel.send("No sticker specified.")

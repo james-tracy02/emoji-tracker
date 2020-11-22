@@ -25,6 +25,8 @@ function printCommands() {
   cmds += '`users <emojiName | emoji>` - display usage data for the given emoji.\n';
   cmds += '`big <emojiName | emoji>` - render a large version of the given emoji.\n';
   cmds += '`add <emojiName | emoji>` - add the given emoji to this server\'s emojis.\n';
+  cmds += '`sticker` <name> <url> - creates a sticker with the given name and image link.\n';
+  cmds += '`use` <name> - uses a sticker.\n';
   cmds += '`help` - display this help message.\n';
   cmds += '`invite` - generate an invite link.\n';
   return cmds;
