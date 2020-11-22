@@ -39,9 +39,9 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   filteredCounts = helpers.sortCountsDesc(filteredCounts);
 
   if(!options.global) {
-    filteredCounts = filteredCounts.filter((count) => msg.guild.members.has(count.userId));
+    filteredCounts = filteredCounts.filter((count) => msg.guild.members.cache.has(count.userId));
   } else {
-    filteredCounts = filteredCounts.filter((count) => msg.client.users.has(count.userId));
+    filteredCounts = filteredCounts.filter((count) => msg.client.users.cache.has(count.userId));
   }
 
   const maxPages = Math.ceil(filteredCounts.length / configs.resultsPerPage);
@@ -55,8 +55,8 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   }
   for(let i = 0; i < pageCounts.length; i++) {
     const count = pageCounts[i];
-    const member = msg.channel.guild.members.get(count.userId);
-    const username = member ? member.displayName : msg.client.users.get(count.userId).username;
+    const member = msg.channel.guild.members.cache.get(count.userId);
+    const username = member ? member.displayName : msg.client.users.cache.get(count.userId).username;
     response += `${print.bar(count.count, filteredCounts[0].count, configs.displayWidth)} `;
     response += `${emoji.toString()} ${username} `;
     response += `${print.rank(options.page, i)} `;
@@ -72,9 +72,9 @@ async function displayUsers(msg, emoji, time, userCounts, options) {
   }
   if(!options.msg) {
     await helpers.addPageControls(responseMsg);
-    await helpers.addGlobalToggle(responseMsg);
+    await helpers.addViewControls(responseMsg);
   }
-  const newOptions = await helpers.awaitMenuActionWithGlobal(msg, responseMsg, options, maxPages);
+  const newOptions = await helpers.awaitMenuActionWithViews(msg, responseMsg, options, maxPages);
   if(!newOptions) {
     return;
   }

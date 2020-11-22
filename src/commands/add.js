@@ -13,7 +13,7 @@ function add(msg, args) {
 }
 
 function addEmoji(msg, emoji, name) {
-  if (msg.guild.emojis.has(emoji.id)) {
+  if (msg.guild.emojis.cache.has(emoji.id)) {
     return msg.channel.send(
       `This server already contains **${emoji.name}**!`,
     );

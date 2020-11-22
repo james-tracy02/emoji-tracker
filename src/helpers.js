@@ -125,7 +125,7 @@ async function awaitMenuActionWithViews(msg, responseMsg, options, maxPages) {
       options.page = 1;
       break;
   }
-  reaction.remove(msg.author.id);
+  //reaction.remove(msg.author.id);
   return options;
 }
 
@@ -156,18 +156,18 @@ function flattenRecordsByField(records, fieldName) {
 
 function getEmojiByName(msg, name, index) {
   if (name === '?') {
-    const emojiIds = Array.from(msg.client.emojis.keys());
+    const emojiIds = Array.from(msg.client.emojis.cache.keys());
     const randomId = emojiIds[Math.floor(Math.random() * emojiIds.length)];
-    return msg.client.emojis.get(randomId);
+    return msg.client.emojis.cache.get(randomId);
   }
   let emojiObj;
   if (index) {
-    const possibleEmojis = Array.from(msg.client.emojis.filter((emoji) => emoji.name === name));
+    const possibleEmojis = Array.from(msg.client.emojis.cache.filter((emoji) => emoji.name === name));
     emojiObj = possibleEmojis[index - 1][1];
   } else {
-    emojiObj = msg.guild.emojis.find((emoji) => emoji.name === name);
+    emojiObj = msg.guild.emojis.cache.find((emoji) => emoji.name === name);
   }
-  if (!emojiObj) emojiObj = msg.client.emojis.find((emoji) => emoji.name === name);
+  if (!emojiObj) emojiObj = msg.client.emojis.cache.find((emoji) => emoji.name === name);
   return emojiObj;
 }
 
@@ -188,7 +188,7 @@ function getEmojiObj(msg, emoji) {
   const matchRendered = emoji.match(regexp.renderedEmoji);
   if (matchRendered) {
     const emojiId = matchRendered[1];
-    return msg.client.emojis.get(emojiId);
+    return msg.client.emojis.cache.get(emojiId);
   }
   const matchUnrendered = emoji.match(regexp.unrenderedEmoji);
   if (matchUnrendered) {
@@ -203,6 +203,23 @@ function getEmojiObj(msg, emoji) {
    return getEmojiByName(msg, name, index);
   }
   return null;
+}
+
+function msgOnBehalf(msg, content, user, embeds) {
+  console.log(msg.member.displayName);
+  const sendFunc = (webhook) => {
+    webhook.send(content, { username: msg.member.displayName, avatarURL: msg.author.displayAvatarURL(), embeds })
+  };
+  msg.channel.fetchWebhooks()
+  .then(webhooks => {
+    const webhook = webhooks.find(webhook => webhook.name = configs.webhookName);
+    if(!webhook) {
+      msg.channel.createWebhook(configs.webhookName)
+      .then(sendFunc);
+    } else {
+      sendFunc(webhook);
+    }
+  });
 }
 
 module.exports = {
@@ -220,4 +237,5 @@ module.exports = {
   makeUserEmbed,
   getEmojiObj,
   makeMemberEmbed,
+  msgOnBehalf,
 }

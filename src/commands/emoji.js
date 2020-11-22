@@ -21,7 +21,7 @@ function emoji(msg, args) {
     displayEmojiForAll(msg, time);
   }
   else if(match) {
-    const memberObj = msg.channel.guild.members.get(match[1]);
+    const memberObj = msg.channel.guild.members.cache.get(match[1]);
     if(memberObj) {
       displayEmojiForMember(msg, memberObj, time);
     } else {
@@ -82,7 +82,7 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
   filteredCounts = helpers.sortCountsDesc(filteredCounts);
 
   if(options.showUnused) {
-    msg.client.emojis.forEach((emoji) => {
+    msg.client.emojis.cache.forEach((emoji) => {
       if(!filteredCounts.some((count) => count.emojiId === emoji.id)) {
         filteredCounts.push({ emojiId: emoji.id, count: 0});
       }
@@ -90,9 +90,9 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
   }
 
   if(!options.global) {
-    filteredCounts = filteredCounts.filter((count) => msg.guild.emojis.has(count.emojiId));
+    filteredCounts = filteredCounts.filter((count) => msg.guild.emojis.cache.has(count.emojiId));
   } else {
-    filteredCounts = filteredCounts.filter((count) => msg.client.emojis.has(count.emojiId));
+    filteredCounts = filteredCounts.filter((count) => msg.client.emojis.cache.has(count.emojiId));
   }
 
   const maxPages = Math.ceil(filteredCounts.length / configs.resultsPerPage);
@@ -106,7 +106,7 @@ async function displayEmoji(msg, name, time, emojiCounts, options) {
   }
   for(let i = 0; i < pageCounts.length; i++) {
     const count = pageCounts[i];
-    const emoji = msg.client.emojis.get(count.emojiId);
+    const emoji = msg.client.emojis.cache.get(count.emojiId);
     response += `${print.bar(count.count, filteredCounts[0].count, configs.displayWidth)} `;
     response += `${emoji.toString()} `;
     response += `${print.rank(options.page, i)} `;

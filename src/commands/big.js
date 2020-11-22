@@ -8,10 +8,8 @@ function big(msg, args) {
     msg.channel.send('Invalid emoji.');
     return;
   }
-  const bigEmbed = helpers.makeMemberEmbed(msg.member);
-  bigEmbed.setImage(emojiObj.url);
-  msg.channel.send(bigEmbed);
-  emojiManager.countIds(msg.author.id, [emojiObj.id]);
+  helpers.msgOnBehalf(msg, "", msg.author.id, [{ image: { url: emojiObj.url }}]);
+  emojiManager.countIds(msg.author.id, [emojiObj.id], msg.guild.id);
 }
 
 module.exports = big;

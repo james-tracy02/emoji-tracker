@@ -2,6 +2,7 @@ const regexp = require('./regexp');
 const records = require('./service/records');
 const { RichEmbed } = require('discord.js');
 const helpers = require('./helpers');
+const configs = require('./configs');
 
 function count(userId, guildId, content) {
     const matches = [...content.matchAll(regexp.emoji)];
@@ -38,16 +39,8 @@ function enrich(msg) {
   return content;
 }
 
-async function msgOnBehalf(msg, content, user) {
-  msg.delete();
-  const userEmbed = helpers.makeMemberEmbed(msg.member);
-  await msg.channel.send(userEmbed);
-  msg.channel.send(content);
-}
-
 module.exports = {
   count,
   enrich,
-  msgOnBehalf,
   countIds,
 };
