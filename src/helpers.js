@@ -1,5 +1,5 @@
 const regexp = require('./regexp');
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const configs = require('./configs');
 
 function sortCountsDesc(counts) {
@@ -172,14 +172,14 @@ function getEmojiByName(msg, name, index) {
 }
 
 function makeUserEmbed(msg) {
-  return new RichEmbed()
+  return new MessageEmbed()
     .setColor('#FEFEFE')
     .setAuthor(msg.author.username);
 }
 
 function makeMemberEmbed(member) {
   const color = member.displayHexColor;
-  return new RichEmbed()
+  return new MessageEmbed()
     .setColor(color === '#000000' ? '#FEFEFE' : color)
     .setAuthor(member.displayName, member.user.avatarURL);
 }
