@@ -206,7 +206,6 @@ function getEmojiObj(msg, emoji) {
 }
 
 function msgOnBehalf(msg, content, user, embeds) {
-  console.log(msg.member.displayName);
   const sendFunc = (webhook) => {
     webhook.send(content, { username: msg.member.displayName, avatarURL: msg.author.displayAvatarURL(), embeds })
   };

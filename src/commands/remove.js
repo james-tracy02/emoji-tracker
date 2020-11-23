@@ -2,9 +2,7 @@ const stickers = require('../service/stickers');
 const helpers = require ('../helpers');
 const configs = require('../configs');
 
-function remove(msg, args) {
-  const name = args[0];
-
+function remove(msg, name) {
   if(name) {
     stickers.deleteSticker(name)
     .then(() => msg.channel.send(`Deleted sticker **${name}**`))

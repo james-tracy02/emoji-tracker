@@ -4,9 +4,8 @@ const regexp = require('../regexp');
 const helpers = require ('../helpers');
 const configs = require('../configs');
 
-function emoji(msg, args) {
-  const user = args[0];
-  const time = helpers.parseTime(args[1]);
+function emoji(msg, user, time) {
+  time = helpers.parseTime(time);
   let match;
   if(user) {
     match = user.match(regexp.userMention);

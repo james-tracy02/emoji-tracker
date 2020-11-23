@@ -1,9 +1,9 @@
 const helpers = require('../helpers');
 const emojiManager = require('../emojiManager');
 
-function big(msg, args) {
+function big(msg, emoji) {
   msg.delete();
-  const emojiObj = helpers.getEmojiObj(msg, args[0]);
+  const emojiObj = helpers.getEmojiObj(msg, emoji);
   if (!emojiObj) {
     msg.channel.send('Invalid emoji.');
     return;

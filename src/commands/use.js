@@ -2,9 +2,7 @@ const stickers = require('../service/stickers');
 const helpers = require ('../helpers');
 const configs = require('../configs');
 
-function use(msg, args) {
-  const name = args[0];
-
+function use(msg, name) {
   if(name) {
     msg.delete();
     stickers.getSticker(name)

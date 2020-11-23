@@ -19,21 +19,7 @@ function printRank(page, index) {
   return rank;
 }
 
-function printCommands() {
-  let cmds = '';
-  cmds += '`emoji <@mention | server | all>` - display emoji usage data for the given user, guild, or all emoji data, respectively.\n';
-  cmds += '`users <emojiName | emoji>` - display usage data for the given emoji.\n';
-  cmds += '`big <emojiName | emoji>` - render a large version of the given emoji.\n';
-  cmds += '`add <emojiName | emoji>` - add the given emoji to this server\'s emojis.\n';
-  cmds += '`sticker` <name> <url> - creates a sticker with the given name and image link.\n';
-  cmds += '`use` <name> - uses a sticker.\n';
-  cmds += '`help` - display this help message.\n';
-  cmds += '`invite` - generate an invite link.\n';
-  return cmds;
-}
-
 module.exports = {
   bar: printBar,
   rank: printRank,
-  commands: printCommands,
 };

@@ -4,9 +4,8 @@ const print = require('../print');
 const helpers = require('../helpers');
 const configs = require('../configs');
 
-function users(msg, args) {
-  const emoji = args[0];
-  const time = helpers.parseTime(args[1]);
+function users(msg, emoji, time) {
+  time = helpers.parseTime(time);
   if(emoji) {
     const emojiObj = helpers.getEmojiObj(msg, emoji);
     if(emojiObj) {

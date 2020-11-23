@@ -2,10 +2,7 @@ const stickers = require('../service/stickers');
 const helpers = require ('../helpers');
 const configs = require('../configs');
 
-function sticker(msg, args) {
-  const name = args[0];
-  const url = args[1];
-
+function sticker(msg, name, url) {
   if(name && url) {
     stickers.createSticker(name, msg.guild.id, url)
     .then(() => msg.channel.send(`Created sticker **${name}**`))

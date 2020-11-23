@@ -1,8 +1,6 @@
 const helpers = require('../helpers');
 
-function add(msg, args) {
-  const emoji = args[0];
-  const name = args[1];
+function add(msg, emoji, name) {
   if(emoji) {
     const emojiObj = helpers.getEmojiObj(msg, emoji);
     if(emojiObj) {
