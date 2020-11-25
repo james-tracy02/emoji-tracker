@@ -27,7 +27,7 @@ client.on('message', msg => {
   } else {
     const newContent = emojiManager.enrich(msg);
     if(newContent) {
-      msg.delete();
+      msg.delete().catch(err => console.error(err));;
       helpers.msgOnBehalf(msg, newContent, msg.author.id);
       emojiManager.count(msg.author.id, msg.guild.id, newContent);
     } else {

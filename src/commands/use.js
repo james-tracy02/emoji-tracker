@@ -4,10 +4,10 @@ const configs = require('../configs');
 
 function use(msg, name) {
   if(name) {
-    msg.delete();
+    msg.delete().catch(err => console.error(err));;
     stickers.getSticker(name)
     .then((sticker) => {
-      helpers.msgOnBehalf(msg, `**${name}**`, msg.author.id, [{ image: { url: sticker.url }}]);
+      helpers.msgOnBehalf(msg, "", msg.author.id, sticker.url);
     })
     .catch(() => msg.channel.send(`Sticker with name **${name}** does not exist.`));
   } else {
