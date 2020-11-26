@@ -207,7 +207,11 @@ function getEmojiObj(msg, emoji) {
 
 function msgOnBehalf(msg, content, user, img) {
   const sendFunc = (webhook) => {
-    webhook.send(content, { username: msg.member.displayName, avatarURL: msg.author.displayAvatarURL(), embeds: [{ color: "#36393F", image: { url: img }}] })
+    const ops = { username: msg.member.displayName, avatarURL: msg.author.displayAvatarURL() };
+    if(img) {
+      ops.embeds = [{ color: "#36393F", image: { url: img }}]
+    }
+    webhook.send(content, ops);
   };
   msg.channel.fetchWebhooks()
   .then(webhooks => {
