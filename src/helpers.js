@@ -209,7 +209,7 @@ function msgOnBehalf(msg, content, user, img) {
   const sendFunc = (webhook) => {
     const ops = { username: msg.member.displayName, avatarURL: msg.author.displayAvatarURL() };
     if(img) {
-      ops.embeds = [{ color: "#36393F", image: { url: img }}]
+      ops.embeds = [{ color: "#2F3136", image: { url: img }}]
     }
     webhook.send(content, ops);
   };
