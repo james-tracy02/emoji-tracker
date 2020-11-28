@@ -91,7 +91,7 @@ async function awaitMenuAction(msg, responseMsg, options, maxPages) {
   } else if(reaction.emoji.name === '⏮️') {
     options.page = 1;
   }
-  reaction.remove(msg.author.id);
+  //reaction.remove(msg.author.id);
   return options;
 }
 
@@ -225,6 +225,42 @@ function msgOnBehalf(msg, content, user, img) {
   });
 }
 
+async function list(msg, title, items, options) {
+  if(!options) {
+    options = {
+      page: 1,
+    };
+  }
+  const maxPages = Math.ceil(items.length / configs.resultsPerPage);
+  const start = (options.page - 1) * configs.resultsPerPage;
+  const end = start + configs.resultsPerPage;
+  const pageItems = items.slice(start, end);
+
+  let response = "";
+  pageItems.forEach((item) => response += `**${item}**\n`);
+  response += `\n Page ${options.page} of ${maxPages}.`;
+
+  const embed = new MessageEmbed()
+  .setColor(configs.color)
+  .setTitle(title)
+  .setDescription(response);
+
+  let responseMsg;
+  if(options.msg) {
+    responseMsg = await options.msg.edit(embed);
+  } else {
+    responseMsg = await msg.channel.send(embed);
+  }
+  if(!options.msg) {
+    await addPageControls(responseMsg);
+  }
+  const newOptions = await awaitMenuAction(msg, responseMsg, options, maxPages);
+  if(!newOptions) {
+    return;
+  }
+  return list(msg, title, items, newOptions);
+}
+
 module.exports = {
   sortCountsDesc,
   getDate,
@@ -241,4 +277,5 @@ module.exports = {
   getEmojiObj,
   makeMemberEmbed,
   msgOnBehalf,
+  list,
 }
